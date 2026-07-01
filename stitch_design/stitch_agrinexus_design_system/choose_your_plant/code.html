@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Agrinexus - Choose Your Plant</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "status-info": "#3867D6",
+                    "background": "#f7faf6",
+                    "on-tertiary-container": "#e2f2e5",
+                    "border-subtle": "#D8E4DA",
+                    "on-primary": "#ffffff",
+                    "surface": "#f7faf6",
+                    "on-secondary-fixed": "#151d19",
+                    "surface-container-low": "#f1f4f0",
+                    "secondary-fixed": "#dce5de",
+                    "surface-tint": "#066c41",
+                    "surface-bright": "#f7faf6",
+                    "on-primary-container": "#aeffca",
+                    "on-secondary": "#ffffff",
+                    "surface-container": "#ecefeb",
+                    "status-attention": "#B5433D",
+                    "surface-elevated": "#FFFFFF",
+                    "surface-container-highest": "#e0e3df",
+                    "on-error": "#ffffff",
+                    "tertiary-container": "#616f65",
+                    "surface-dim": "#d8dbd7",
+                    "primary-fixed": "#9ef5be",
+                    "on-primary-fixed": "#002110",
+                    "text-primary": "#17211B",
+                    "dark-surface-elevated": "#162019",
+                    "on-secondary-fixed-variant": "#404944",
+                    "on-primary-fixed-variant": "#00522f",
+                    "primary-fixed-dim": "#82d8a3",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary-fixed": "#d7e6da",
+                    "secondary-fixed-dim": "#c0c9c2",
+                    "on-background": "#181c1a",
+                    "primary": "#006038",
+                    "secondary": "#58605b",
+                    "outline": "#6f7a71",
+                    "on-surface": "#181c1a",
+                    "inverse-on-surface": "#eef2ee",
+                    "dark-surface": "#0F1612",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-container": "#5e6661",
+                    "error-container": "#ffdad6",
+                    "on-error-container": "#93000a",
+                    "surface-variant": "#e0e3df",
+                    "tertiary-fixed-dim": "#bbcabe",
+                    "status-waiting": "#C27A20",
+                    "dark-brand-primary": "#6DDBA0",
+                    "secondary-container": "#dce5de",
+                    "brand-pressed": "#165E3A",
+                    "inverse-surface": "#2d312f",
+                    "tertiary": "#49574d",
+                    "on-tertiary-fixed": "#121e17",
+                    "outline-variant": "#bec9bf",
+                    "on-tertiary-fixed-variant": "#3c4a41",
+                    "on-surface-variant": "#3f4941",
+                    "error": "#ba1a1a",
+                    "inverse-primary": "#82d8a3",
+                    "primary-container": "#1f7a4d",
+                    "surface-container-high": "#e6e9e5"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "md": "16px",
+                    "baseline": "4px",
+                    "xl": "24px",
+                    "lg": "20px",
+                    "touch-target": "48px",
+                    "screen-edge": "20px",
+                    "xxl": "32px",
+                    "sm": "8px",
+                    "xs": "4px"
+            },
+            "fontFamily": {
+                    "screen-title": ["Outfit"],
+                    "body-lg": ["Inter"],
+                    "label-button": ["Inter"],
+                    "caption": ["Inter"],
+                    "section-title": ["Outfit"],
+                    "screen-title-mobile": ["Outfit"],
+                    "body-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "screen-title": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-button": ["15px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "caption": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "400"}],
+                    "section-title": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "screen-title-mobile": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .plant-card-active {
+            border: 2px solid #006038;
+            box-shadow: 0 4px 20px rgba(0, 96, 56, 0.12);
+        }
+        .plant-card-inactive {
+            border: 2px solid transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #D8E4DA;
+            border-radius: 10px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-lg min-h-screen flex flex-col items-center">
+<!-- Top AppBar (Back Action Only for Transactional Flow) -->
+<header class="w-full top-0 sticky z-30 bg-surface flex justify-between items-center px-screen-edge py-sm">
+<button aria-label="Go back" class="p-2 -ml-2 rounded-full hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-primary text-[24px]">arrow_back</span>
+</button>
+<div class="font-screen-title-mobile text-screen-title-mobile text-primary">Agrinexus</div>
+<div class="w-10"></div> <!-- Spacer for centering -->
+</header>
+<main class="w-full max-w-md flex-1 flex flex-col px-screen-edge pb-xxl">
+<!-- Hero Section -->
+<section class="mt-md mb-xl">
+<h1 class="font-screen-title-mobile text-screen-title-mobile text-text-primary mb-sm">Choose Your Plant</h1>
+<p class="font-body-lg text-on-surface-variant">Select the seeds you want to grow in your new pod.</p>
+</section>
+<!-- Plant Grid -->
+<section class="grid grid-cols-2 gap-md flex-1">
+<!-- Plant Item: Sweet Basil -->
+<div class="plant-card plant-card-inactive bg-surface-elevated rounded-lg shadow-sm cursor-pointer transition-all duration-200 flex flex-col overflow-hidden group" onclick="selectPlant(this)">
+<div class="aspect-square w-full relative">
+<img class="w-full h-full object-cover" data-alt="A lush, high-resolution close-up of vibrant Sweet Basil leaves with delicate water droplets, growing inside a modern minimalist white hydroponic system. The lighting is bright and natural, reflecting a clean kitchen-native aesthetic. The background is a soft-focus modern kitchen with light wood and white marble textures, emphasizing a fresh, organic mood." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBD3kr8SnQN5ZigEev9PUad-apeU8aX0VOfUjulsY-qGiDMB2HP565tVjPyNyiygzw9ckDSu7h5uWoClMUD-AJm80KII8BYiErHPiQgSL567t68V6b8uBT6rKTAbNPnueALU_qbgKtJnt8K5fEpxjuKakrKD7X3fZ8pB4YVUzAH3_r6YCzPt0j4r6fGOyEJ9OnjNbGhPq9B3vYdc843EG7qBwizIH10H6ocV3FpSkwmT74k3GFNC1PMtgANZ6cukADrE2JBTR5qAx72"/>
+<div class="absolute top-2 right-2 opacity-0 group-[.plant-card-active]:opacity-100 transition-opacity">
+<span class="material-symbols-outlined bg-primary text-on-primary rounded-full p-1 text-[16px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<div class="p-md">
+<h3 class="font-section-title text-body-lg text-text-primary">Sweet Basil</h3>
+<p class="font-caption text-caption text-on-surface-variant mt-xs">Aromatic and easy to grow</p>
+</div>
+</div>
+<!-- Plant Item: Mint -->
+<div class="plant-card plant-card-inactive bg-surface-elevated rounded-lg shadow-sm cursor-pointer transition-all duration-200 flex flex-col overflow-hidden group" onclick="selectPlant(this)">
+<div class="aspect-square w-full relative">
+<img class="w-full h-full object-cover" data-alt="A vigorous cluster of fresh Peppermint leaves with deep serrated edges and rich green color. The plant is beautifully captured in a bright, airy indoor garden setting. The image uses high-key lighting to highlight the tactile texture of the leaves, maintaining a professional and calm corporate-modern aesthetic with soft green and white tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuApMExSviZWEXP_lN_N4ip2FakCNvuDHVXYWCHXc-N67fPbJM6hhXBrh0yPWDuu5cm3vCBhOnuJQGo5TDvgZowYX2OaA-klePq0pdpsSyy7qTWufE4vRExilkSnQrXIchUbwt7SLXABui47UHwRUqkiYJbY8-JuHPTpB4I8dc818At0otYLdZZ1hVlbGX99ES802wWZSn1rqkIIqxx12OFFU-feYlUCxpx4T4M-qxCWErPO0-qr5kpVJHfgYIcDNJ2ef9NrgIZYh8AG"/>
+<div class="absolute top-2 right-2 opacity-0 group-[.plant-card-active]:opacity-100 transition-opacity">
+<span class="material-symbols-outlined bg-primary text-on-primary rounded-full p-1 text-[16px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<div class="p-md">
+<h3 class="font-section-title text-body-lg text-text-primary">Mint</h3>
+<p class="font-caption text-caption text-on-surface-variant mt-xs">Fresh and vigorous</p>
+</div>
+</div>
+<!-- Plant Item: Butterhead Lettuce -->
+<div class="plant-card plant-card-inactive bg-surface-elevated rounded-lg shadow-sm cursor-pointer transition-all duration-200 flex flex-col overflow-hidden group" onclick="selectPlant(this)">
+<div class="aspect-square w-full relative">
+<img class="w-full h-full object-cover" data-alt="A pristine, compact head of Butterhead Lettuce with tender, pale green inner leaves and broad outer leaves. The lighting is soft and even, highlighting the crisp, appetizing texture of the greens. The setting is a bright, high-end urban kitchen space, reflecting a fresh, healthy lifestyle through a minimalist and clean visual style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBoHWXhdb09Nr4S5FMNoac6H6OhH3qosKOeispOpcJB8iL9jR_NiQoDh6UTZ8C0RS_QmdrYg2Y8i_VVtJLkGX0Nms41QxyJzoit0hYoMyyKE1e2Lmcfa-_1Y9ezxFuzNpFiNx72p3nK9pvNV3ADPqTG04L_FVWuE-x0NJkdDD-VYbt4EZgf_-a1o86VkV34r9eXC0qWQX-bwGltA_3aRDo7iScUSKkul2lF6cn7In8599t5mprDJS4D0DQdNSCxcLjXFim62_vY7Zrx"/>
+<div class="absolute top-2 right-2 opacity-0 group-[.plant-card-active]:opacity-100 transition-opacity">
+<span class="material-symbols-outlined bg-primary text-on-primary rounded-full p-1 text-[16px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<div class="p-md">
+<h3 class="font-section-title text-body-lg text-text-primary">Butterhead Lettuce</h3>
+<p class="font-caption text-caption text-on-surface-variant mt-xs">Crisp and delicious</p>
+</div>
+</div>
+<!-- Plant Item: Cilantro -->
+<div class="plant-card plant-card-inactive bg-surface-elevated rounded-lg shadow-sm cursor-pointer transition-all duration-200 flex flex-col overflow-hidden group" onclick="selectPlant(this)">
+<div class="aspect-square w-full relative">
+<img class="w-full h-full object-cover" data-alt="Delicate, feathery sprigs of bright green Cilantro growing densely in a clean, white ceramic pot. The lighting is sunny and warm, creating a welcoming and productive home garden atmosphere. The palette is dominated by fresh greens and whites, perfectly aligned with a tactile, urban freshness and a modern indoor farming design language." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5gYjGoSTjpraU8q9nSRR8RUuQ8oqhnLV3aqHjzB30d9KwYn1fhfMOkRlmeHNomSDNLZtekjXo9nGU-o-ZDM8FF435EzdJME7XX5TPwEyjwSdCJtwDAI22ItmtodSrEY4LCMhGwllTJN5P1H60Y-TYXjuALihkzTBcJu62-ZYteXoKFhPU9Q30bD6yYfKtg6uO5UeYj5A2g3pqXyRidsKoxCmUgkhBTd7oQXcskPU3posWyblUvZNoeD6G_gH7xSMP2ADdaZEZ-keS"/>
+<div class="absolute top-2 right-2 opacity-0 group-[.plant-card-active]:opacity-100 transition-opacity">
+<span class="material-symbols-outlined bg-primary text-on-primary rounded-full p-1 text-[16px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<div class="p-md">
+<h3 class="font-section-title text-body-lg text-text-primary">Cilantro</h3>
+<p class="font-caption text-caption text-on-surface-variant mt-xs">Essential kitchen herb</p>
+</div>
+</div>
+</section>
+<!-- Fixed Bottom Action Bar (Simulated Fixed within Mobile View) -->
+<div class="mt-xxl flex flex-col items-center">
+<button class="w-full h-[52px] rounded-full bg-surface-container text-on-surface-variant font-label-button text-label-button flex items-center justify-center transition-all duration-300 opacity-50 cursor-not-allowed" disabled="" id="cta-button">
+                Start Growing
+            </button>
+<p class="mt-md font-caption text-caption text-on-surface-variant text-center px-lg">
+                Agrinexus will automatically adjust water and light settings for your chosen plant.
+            </p>
+</div>
+</main>
+<script>
+        let selectedElement = null;
+
+        function selectPlant(el) {
+            const btn = document.getElementById('cta-button');
+            
+            // If already selected, do nothing or toggle? Let's assume radio selection
+            if (selectedElement === el) return;
+
+            // Remove active classes from previous
+            document.querySelectorAll('.plant-card').forEach(card => {
+                card.classList.remove('plant-card-active');
+                card.classList.add('plant-card-inactive');
+            });
+
+            // Add to current
+            el.classList.add('plant-card-active');
+            el.classList.remove('plant-card-inactive');
+            selectedElement = el;
+
+            // Enable CTA
+            btn.disabled = false;
+            btn.classList.remove('bg-surface-container', 'text-on-surface-variant', 'opacity-50', 'cursor-not-allowed');
+            btn.classList.add('bg-primary', 'text-on-primary', 'shadow-lg', 'active:scale-95');
+            
+            // Simple haptic-like scale effect on click
+            el.classList.add('scale-[0.98]');
+            setTimeout(() => el.classList.remove('scale-[0.98]'), 100);
+        }
+
+        // Add a small hover/touch effect for interactivity
+        document.querySelectorAll('.plant-card').forEach(card => {
+            card.addEventListener('touchstart', () => {
+                card.classList.add('opacity-90');
+            });
+            card.addEventListener('touchend', () => {
+                card.classList.remove('opacity-90');
+            });
+        });
+    </script>
+</body></html>

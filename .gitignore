@@ -1,0 +1,15 @@
+# Local Claude Code settings (personal, never commit)
+.claude/settings.local.json
+
+# Build artifacts and archives
+*.zip
+*.tar.gz
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.local
+.env.*.local

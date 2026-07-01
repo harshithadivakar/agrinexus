@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>Pair Your Garden - AgriNexus</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Fonts: Outfit (Titles) & Inter (Body) -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Outfit:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+                  "dark-surface": "#0F1612",
+                  "on-error-container": "#93000a",
+                  "secondary-fixed": "#dce5de",
+                  "on-tertiary-fixed": "#121e17",
+                  "inverse-on-surface": "#eef2ee",
+                  "tertiary": "#49574d",
+                  "on-surface": "#181c1a",
+                  "dark-brand-primary": "#6DDBA0",
+                  "primary-fixed-dim": "#82d8a3",
+                  "on-tertiary-fixed-variant": "#3c4a41",
+                  "on-primary-container": "#aeffca",
+                  "on-secondary-fixed": "#151d19",
+                  "status-waiting": "#C27A20",
+                  "on-tertiary": "#ffffff",
+                  "error-container": "#ffdad6",
+                  "surface-container": "#ecefeb",
+                  "tertiary-fixed": "#d7e6da",
+                  "inverse-primary": "#82d8a3",
+                  "surface-tint": "#066c41",
+                  "on-tertiary-container": "#e2f2e5",
+                  "on-primary-fixed-variant": "#00522f",
+                  "dark-surface-elevated": "#162019",
+                  "tertiary-container": "#616f65",
+                  "surface-container-high": "#e6e9e5",
+                  "on-secondary-fixed-variant": "#404944",
+                  "on-error": "#ffffff",
+                  "on-primary-fixed": "#002110",
+                  "surface-elevated": "#FFFFFF",
+                  "primary-container": "#1f7a4d",
+                  "surface-variant": "#e0e3df",
+                  "text-primary": "#17211B",
+                  "surface-container-highest": "#e0e3df",
+                  "status-attention": "#B5433D",
+                  "primary": "#006038",
+                  "surface-container-lowest": "#ffffff",
+                  "error": "#ba1a1a",
+                  "on-secondary-container": "#5e6661",
+                  "on-secondary": "#ffffff",
+                  "on-background": "#181c1a",
+                  "primary-fixed": "#9ef5be",
+                  "outline-variant": "#bec9bf",
+                  "surface-dim": "#d8dbd7",
+                  "on-surface-variant": "#3f4941",
+                  "surface-bright": "#f7faf6",
+                  "surface-container-low": "#f1f4f0",
+                  "on-primary": "#ffffff",
+                  "secondary-container": "#dce5de",
+                  "status-info": "#3867D6",
+                  "inverse-surface": "#2d312f",
+                  "secondary-fixed-dim": "#c0c9c2",
+                  "brand-pressed": "#165E3A",
+                  "secondary": "#58605b",
+                  "border-subtle": "#D8E4DA",
+                  "background": "#f7faf6",
+                  "tertiary-fixed-dim": "#bbcabe",
+                  "surface": "#f7faf6",
+                  "outline": "#6f7a71"
+          },
+          "borderRadius": {
+                  "DEFAULT": "0.25rem",
+                  "lg": "0.5rem",
+                  "xl": "0.75rem",
+                  "full": "9999px"
+          },
+          "spacing": {
+                  "xxl": "32px",
+                  "md": "16px",
+                  "touch-target": "48px",
+                  "sm": "8px",
+                  "lg": "20px",
+                  "baseline": "4px",
+                  "screen-edge": "20px",
+                  "xl": "24px",
+                  "xs": "4px"
+          },
+          "fontFamily": {
+                  "section-title": ["Outfit"],
+                  "screen-title": ["Outfit"],
+                  "label-button": ["Inter"],
+                  "caption": ["Inter"],
+                  "body-lg": ["Inter"],
+                  "screen-title-mobile": ["Outfit"],
+                  "body-sm": ["Inter"]
+          },
+          "fontSize": {
+                  "section-title": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                  "screen-title": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                  "label-button": ["15px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                  "caption": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "400"}],
+                  "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                  "screen-title-mobile": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                  "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    
+    /* Viewfinder corner accents */
+    .viewfinder-corner {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      border-color: #82d8a3; /* inverse-primary / light brand highlight */
+      border-width: 4px;
+    }
+    
+    .scanning-line {
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #6DDBA0, transparent);
+      position: absolute;
+      top: 0;
+      animation: scan 3s linear infinite;
+      box-shadow: 0 0 15px #6DDBA0;
+    }
+
+    @keyframes scan {
+      0% { top: 0%; }
+      50% { top: 100%; }
+      100% { top: 0%; }
+    }
+
+    .shimmer {
+      background: linear-gradient(90deg, #f7faf6 25%, #ecefeb 50%, #f7faf6 75%);
+      background-size: 200% 100%;
+      animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body-lg min-h-screen flex flex-col">
+<!-- TopAppBar (Suppressed navigation, Task-focused) -->
+<header class="fixed top-0 w-full z-50 bg-surface dark:bg-dark-surface flex items-center px-screen-edge h-touch-target transition-colors duration-200">
+<button aria-label="Go back" class="mr-4 p-2 -ml-2 rounded-full hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-on-surface">arrow_back</span>
+</button>
+<h1 class="font-screen-title-mobile text-screen-title-mobile text-primary dark:text-dark-brand-primary">Pair Your Garden</h1>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col items-center justify-center px-screen-edge pt-24 pb-12 overflow-hidden">
+<!-- Viewfinder Container -->
+<div class="relative w-full max-w-[320px] aspect-square bg-surface-container-highest rounded-xl overflow-hidden shadow-sm">
+<!-- Background Placeholder for Camera Feed -->
+<div class="w-full h-full bg-cover bg-center grayscale-[0.2] opacity-80" data-alt="A high-resolution first-person view through a smartphone camera aiming at a sleek white AgriNexus hydroponic smart garden. The scene is bright and airy with natural sunlight streaming through a nearby window. The background shows a modern kitchen with clean lines and soft green accents. A subtle bokeh effect emphasizes the focus on the garden unit's surface where a QR code is expected to be found." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuClgeEOMlyszzCUErffGIrHeRWEoOFU8s_pqgb84OtuY6H5bPSwiL4GPFZXQuIzvWDlC7OkRPy0jM6lV1VNGwMfmCztR0BloXadhXmZO-mV8nFhbQ6V70RiIp5wgBvh04z6mDe4leLXm7VwplBI2zxCyGueU6BPe-FUhTmBUtVO1uQi9yKySD_37qCXKdXBbFQ-ErTahtmVyV3-ZIx6pQ20cjLuD-BWgM6h1037MqbbcomJ1D9hauga-80UM0kemn4U4zxofnI0dQoh')"></div>
+<!-- Viewfinder Overlay Elements -->
+<div class="absolute inset-0 flex items-center justify-center">
+<!-- Viewfinder Box -->
+<div class="relative w-64 h-64 border-2 border-white/30 rounded-lg">
+<!-- Corners -->
+<div class="viewfinder-corner top-0 left-0 border-t-4 border-l-4 rounded-tl-lg"></div>
+<div class="viewfinder-corner top-0 right-0 border-t-4 border-r-4 rounded-tr-lg"></div>
+<div class="viewfinder-corner bottom-0 left-0 border-b-4 border-l-4 rounded-bl-lg"></div>
+<div class="viewfinder-corner bottom-0 right-0 border-b-4 border-r-4 rounded-br-lg"></div>
+<!-- Animated Scanning Line -->
+<div class="scanning-line"></div>
+</div>
+</div>
+<!-- Flash Toggle -->
+<button class="absolute top-4 right-4 bg-black/30 backdrop-blur-md p-3 rounded-full text-white active:scale-90 transition-transform">
+<span class="material-symbols-outlined">flashlight_on</span>
+</button>
+</div>
+<!-- Instruction Text -->
+<div class="mt-xl text-center max-w-[280px]">
+<p class="font-body-lg text-on-surface-variant leading-relaxed">
+        Scan the QR code located on the back or bottom of your <span class="font-bold text-primary">Agrinexus</span> device.
+      </p>
+</div>
+<!-- Actions Section -->
+<div class="mt-auto w-full max-w-[320px] flex flex-col gap-sm items-center">
+<!-- Main Action -->
+<button class="w-full bg-primary text-on-primary font-label-button text-label-button h-[52px] rounded-full shadow-sm hover:opacity-90 active:scale-95 transition-all">
+        Scan Code
+      </button>
+<!-- Secondary Help Link -->
+<button class="h-touch-target flex items-center justify-center font-label-button text-primary hover:underline">
+        Where is my QR code?
+      </button>
+</div>
+</main>
+<!-- Illustration Section (Subtle Contextual Visual) -->
+<div class="px-screen-edge pb-10">
+<div class="bg-surface-container-low rounded-xl p-md flex items-center gap-md border border-border-subtle">
+<div class="w-12 h-12 bg-primary-container flex items-center justify-center rounded-lg">
+<span class="material-symbols-outlined text-on-primary-container">qr_code_2</span>
+</div>
+<div>
+<h4 class="font-section-title text-body-sm font-semibold">Automatic Pairing</h4>
+<p class="font-caption text-on-surface-variant">Keep your phone close to the device for faster discovery.</p>
+</div>
+</div>
+</div>
+<!-- Bottom Navigation is suppressed per instructions for task-focused onboarding -->
+<script>
+    // Micro-interaction for the back button
+    document.querySelector('header button').addEventListener('click', () => {
+      window.history.back();
+    });
+
+    // Simulate "Where is my QR code" modal or behavior
+    document.querySelector('.text-primary.hover\\:underline').addEventListener('click', () => {
+      alert("Look for a small square sticker with a black and white pixel pattern. It's usually near the power input or on the base of the water reservoir.");
+    });
+
+    // Simple interaction for the scan button
+    const scanBtn = document.querySelector('button.bg-primary');
+    scanBtn.addEventListener('click', () => {
+      scanBtn.innerHTML = '<span class="flex items-center gap-2"><svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Scanning...</span>';
+      setTimeout(() => {
+        scanBtn.textContent = "Code Found!";
+        scanBtn.classList.replace('bg-primary', 'bg-status-info');
+      }, 2000);
+    });
+  </script>
+</body></html>

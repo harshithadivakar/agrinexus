@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>AgriNexus - Guided Setup</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "dark-surface": "#0F1612",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed": "#dce5de",
+                        "on-tertiary-fixed": "#121e17",
+                        "inverse-on-surface": "#eef2ee",
+                        "tertiary": "#49574d",
+                        "on-surface": "#181c1a",
+                        "dark-brand-primary": "#6DDBA0",
+                        "primary-fixed-dim": "#82d8a3",
+                        "on-tertiary-fixed-variant": "#3c4a41",
+                        "on-primary-container": "#aeffca",
+                        "on-secondary-fixed": "#151d19",
+                        "status-waiting": "#C27A20",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "surface-container": "#ecefeb",
+                        "tertiary-fixed": "#d7e6da",
+                        "inverse-primary": "#82d8a3",
+                        "surface-tint": "#066c41",
+                        "on-tertiary-container": "#e2f2e5",
+                        "on-primary-fixed-variant": "#00522f",
+                        "dark-surface-elevated": "#162019",
+                        "tertiary-container": "#616f65",
+                        "surface-container-high": "#e6e9e5",
+                        "on-secondary-fixed-variant": "#404944",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed": "#002110",
+                        "surface-elevated": "#FFFFFF",
+                        "primary-container": "#1f7a4d",
+                        "surface-variant": "#e0e3df",
+                        "text-primary": "#17211B",
+                        "surface-container-highest": "#e0e3df",
+                        "status-attention": "#B5433D",
+                        "primary": "#006038",
+                        "surface-container-lowest": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-secondary-container": "#5e6661",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#181c1a",
+                        "primary-fixed": "#9ef5be",
+                        "outline-variant": "#bec9bf",
+                        "surface-dim": "#d8dbd7",
+                        "on-surface-variant": "#3f4941",
+                        "surface-bright": "#f7faf6",
+                        "surface-container-low": "#f1f4f0",
+                        "on-primary": "#ffffff",
+                        "secondary-container": "#dce5de",
+                        "status-info": "#3867D6",
+                        "inverse-surface": "#2d312f",
+                        "secondary-fixed-dim": "#c0c9c2",
+                        "brand-pressed": "#165E3A",
+                        "secondary": "#58605b",
+                        "border-subtle": "#D8E4DA",
+                        "background": "#f7faf6",
+                        "tertiary-fixed-dim": "#bbcabe",
+                        "surface": "#f7faf6",
+                        "outline": "#6f7a71"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xxl": "32px",
+                        "md": "16px",
+                        "touch-target": "48px",
+                        "sm": "8px",
+                        "lg": "20px",
+                        "baseline": "4px",
+                        "screen-edge": "20px",
+                        "xl": "24px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "section-title": ["Outfit"],
+                        "screen-title": ["Outfit"],
+                        "label-button": ["Inter"],
+                        "caption": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "screen-title-mobile": ["Outfit"],
+                        "body-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "section-title": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "screen-title": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "label-button": ["15px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "caption": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "400"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "screen-title-mobile": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #f7faf6;
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* Custom smooth transition for the setup screen */
+        .setup-fade-in {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-lg text-on-surface">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface dark:bg-dark-surface flex items-center justify-between px-screen-edge h-touch-target">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary dark:text-dark-brand-primary">potted_plant</span>
+<h1 class="font-screen-title-mobile text-screen-title-mobile text-primary dark:text-dark-brand-primary">AgriNexus</h1>
+</div>
+<div class="w-8 h-8 rounded-full bg-surface-variant overflow-hidden flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">person</span>
+</div>
+</header>
+<!-- Content Canvas -->
+<main class="pt-[48px] min-h-screen flex flex-col items-center justify-between px-screen-edge pb-xxl setup-fade-in">
+<!-- Step Indicator & Header -->
+<div class="w-full mt-xl text-center">
+<div class="flex justify-center items-center gap-2 mb-sm">
+<span class="text-caption font-caption text-primary uppercase tracking-widest">Step 1 of 5</span>
+</div>
+<div class="flex w-full h-1 bg-surface-container rounded-full overflow-hidden mb-xl max-w-md mx-auto">
+<div class="h-full bg-primary w-1/5 transition-all duration-500"></div>
+</div>
+<h2 class="font-screen-title-mobile text-screen-title-mobile text-on-surface mb-xs">Let's Get Started</h2>
+<p class="font-body-lg text-on-surface-variant max-w-sm mx-auto">Find a flat surface in your kitchen with access to a power outlet.</p>
+</div>
+<!-- Central Visual: Device on Kitchen Counter -->
+<div class="relative w-full max-w-lg aspect-square mt-xl">
+<!-- Glassmorphic Decorative Circle -->
+<div class="absolute inset-0 bg-primary/5 rounded-full blur-3xl -z-10"></div>
+<div class="w-full h-full rounded-[24px] overflow-hidden shadow-sm bg-surface-elevated border border-white/50 relative">
+<img class="w-full h-full object-cover" data-alt="A high-end, sleek minimalist hydroponic indoor garden appliance sitting on a clean, modern white quartz kitchen countertop. The kitchen is bright with soft natural morning light, featuring a warm wooden bowl and a small sage-colored kettle in the background. The device has a matte white finish with a dark wooden base and a soft, warm LED glow emanating from its plant-growing section. The overall aesthetic is calm, professional, and urban-fresh, using a palette of greens, soft whites, and light wood tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBS45ND4xL6YwppJ-QKCqGfrr7-loYKWLQxiMXTh6LQptAvlDwba0HyxzLC-u3dmYfSHkGJW0XCT6Ph9Rp9L1zCsXrbZOeSuI5Klx_2wqw4cuKBCUUApRkbmWBv3TrghiEe312CxRiR_M0rG6-oU933ycuqSLpHc8XUrD94osPssV2Ghzurh2_K2bClWfRaN9aAdGJt_Ovtc9-0GaqS2W4D5a9NUQOXFyfHkCxIcwWtSNJQ0rnk85tDd01apiW7qq2zfWzW1B6Fpev0"/>
+<!-- Floating Detail Card (Passive Status Philosophy) -->
+<div class="absolute bottom-4 left-4 right-4 p-4 bg-white/80 backdrop-blur-md rounded-xl border border-white/40 flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">electrical_services</span>
+</div>
+<div>
+<p class="font-caption text-caption text-on-surface-variant">Recommended Spot</p>
+<p class="font-section-title text-[16px] leading-tight text-on-surface">Near a 220V Outlet</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Instructions & Actions -->
+<div class="w-full mt-xxl max-w-md">
+<div class="flex flex-col gap-4">
+<button class="w-full h-[52px] bg-primary text-white rounded-full font-label-button text-label-button shadow-sm hover:bg-brand-pressed active:scale-95 transition-all flex items-center justify-center gap-2">
+                    Next: Add Water
+                    <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+<button class="w-full h-[48px] bg-surface-container-low text-on-surface-variant rounded-full font-label-button text-label-button border border-border-subtle hover:bg-surface-container transition-colors">
+                    Skip Setup for Now
+                </button>
+</div>
+<!-- Contextual Tip -->
+<div class="mt-xl flex items-start gap-3 p-4 bg-tertiary-container/5 rounded-xl border border-tertiary-fixed/30">
+<span class="material-symbols-outlined text-primary text-[20px]">info</span>
+<p class="text-caption font-caption text-on-surface-variant">
+                    Place your AgriNexus away from direct sunlight for optimal nutrient balance and water temperature.
+                </p>
+</div>
+</div>
+</main>
+<!-- Note: BottomNavBar and FAB are suppressed for this transactional setup flow as per Shared Components Logic -->
+<script>
+        // Micro-interaction for the next button
+        const nextButton = document.querySelector('button.bg-primary');
+        nextButton.addEventListener('click', function() {
+            // Simulated loading state
+            this.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span>';
+            setTimeout(() => {
+                // In a real app, this would navigate to step 2
+                this.innerHTML = 'Next: Add Water <span class="material-symbols-outlined text-[18px]">arrow_forward</span>';
+            }, 800);
+        });
+
+        // Atmospheric micro-interaction for the image container
+        const imageCard = document.querySelector('main > div.relative');
+        document.addEventListener('mousemove', (e) => {
+            const xAxis = (window.innerWidth / 2 - e.pageX) / 50;
+            const yAxis = (window.innerHeight / 2 - e.pageY) / 50;
+            imageCard.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+        });
+    </script>
+</body></html>

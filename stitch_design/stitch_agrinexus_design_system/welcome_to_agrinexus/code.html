@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Welcome to AgriNexus</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "dark-surface": "#0F1612",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed": "#dce5de",
+                        "on-tertiary-fixed": "#121e17",
+                        "inverse-on-surface": "#eef2ee",
+                        "tertiary": "#49574d",
+                        "on-surface": "#181c1a",
+                        "dark-brand-primary": "#6DDBA0",
+                        "primary-fixed-dim": "#82d8a3",
+                        "on-tertiary-fixed-variant": "#3c4a41",
+                        "on-primary-container": "#aeffca",
+                        "on-secondary-fixed": "#151d19",
+                        "status-waiting": "#C27A20",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "surface-container": "#ecefeb",
+                        "tertiary-fixed": "#d7e6da",
+                        "inverse-primary": "#82d8a3",
+                        "surface-tint": "#066c41",
+                        "on-tertiary-container": "#e2f2e5",
+                        "on-primary-fixed-variant": "#00522f",
+                        "dark-surface-elevated": "#162019",
+                        "tertiary-container": "#616f65",
+                        "surface-container-high": "#e6e9e5",
+                        "on-secondary-fixed-variant": "#404944",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed": "#002110",
+                        "surface-elevated": "#FFFFFF",
+                        "primary-container": "#1f7a4d",
+                        "surface-variant": "#e0e3df",
+                        "text-primary": "#17211B",
+                        "surface-container-highest": "#e0e3df",
+                        "status-attention": "#B5433D",
+                        "primary": "#006038",
+                        "surface-container-lowest": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-secondary-container": "#5e6661",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#181c1a",
+                        "primary-fixed": "#9ef5be",
+                        "outline-variant": "#bec9bf",
+                        "surface-dim": "#d8dbd7",
+                        "on-surface-variant": "#3f4941",
+                        "surface-bright": "#f7faf6",
+                        "surface-container-low": "#f1f4f0",
+                        "on-primary": "#ffffff",
+                        "secondary-container": "#dce5de",
+                        "status-info": "#3867D6",
+                        "inverse-surface": "#2d312f",
+                        "secondary-fixed-dim": "#c0c9c2",
+                        "brand-pressed": "#165E3A",
+                        "secondary": "#58605b",
+                        "border-subtle": "#D8E4DA",
+                        "background": "#f7faf6",
+                        "tertiary-fixed-dim": "#bbcabe",
+                        "surface": "#f7faf6",
+                        "outline": "#6f7a71"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xxl": "32px",
+                        "md": "16px",
+                        "touch-target": "48px",
+                        "sm": "8px",
+                        "lg": "20px",
+                        "baseline": "4px",
+                        "screen-edge": "20px",
+                        "xl": "24px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "section-title": ["Outfit"],
+                        "screen-title": ["Outfit"],
+                        "label-button": ["Inter"],
+                        "caption": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "screen-title-mobile": ["Outfit"],
+                        "body-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "section-title": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "screen-title": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "label-button": ["15px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "caption": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "400"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "screen-title-mobile": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #F7FAF6;
+            color: #181C1A;
+            -webkit-font-smoothing: antialiased;
+        }
+        .hero-gradient {
+            background: linear-gradient(180deg, rgba(247, 250, 246, 0) 0%, rgba(247, 250, 246, 0.8) 70%, rgba(247, 250, 246, 1) 100%);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-lg text-on-surface">
+<!-- Top App Bar (Shared Component Strategy) -->
+<header class="fixed top-0 w-full z-50 bg-transparent flex items-center justify-between px-screen-edge h-touch-target">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary text-[24px]">potted_plant</span>
+<span class="font-screen-title-mobile text-[22px] font-extrabold tracking-tight text-primary">AgriNexus</span>
+</div>
+<div class="w-touch-target h-touch-target flex items-center justify-end">
+<button class="text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 p-2 rounded-full active:opacity-80">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="relative min-h-screen flex flex-col">
+<!-- Hero Image Section -->
+<div class="relative w-full h-[530px] md:h-[574px] overflow-hidden">
+<div class="absolute inset-0 w-full h-full" data-alt="A high-end, minimalist modern kitchen featuring a sleek AgriNexus countertop hydroponic garden. Vibrant green basil, mint, and cilantro are growing lushly under soft, integrated LED lighting. The kitchen has clean white marble surfaces and natural wood accents, bathed in soft morning sunlight. The aesthetic is incredibly fresh, calm, and sophisticated, emphasizing urban greenery and a healthy lifestyle within a premium home environment." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDQWdNc7gmLVKTtiWxp8JTqtqVoZx8oeokM3suGjRscEE7PEkMX_N37cyPRXcehoK5BRMYeqdqwxMenlc_7RzGUNC3gLGH-37XI9IbGJsfesESar73L8j6FgMT1tf94Dlr0bIMhG4GtKnlI75WfCkjLwLCwKQCwzQy04bADuMJ5j22kuzS25m69PYxhkmOCppy1ZWHS35rULCr5j-rjTtv3mwnIQ0thMPybymo5gNRSjj_awLBtHBDb1gmwqo9X5b3u7wNGnRaPjpdJ')">
+</div>
+<!-- Soft transition gradient to content -->
+<div class="absolute inset-0 hero-gradient"></div>
+</div>
+<!-- Content Section -->
+<div class="flex-grow flex flex-col justify-end px-screen-edge pb-xxl -mt-32 relative z-10">
+<div class="max-w-md mx-auto w-full text-center md:text-left">
+<div class="space-y-sm mb-xxl">
+<h1 class="font-screen-title-mobile text-screen-title-mobile text-text-primary leading-tight">
+                        Grow fresh herbs at your fingertips.
+                    </h1>
+<p class="font-body-lg text-on-surface-variant opacity-90 max-w-[280px] mx-auto md:mx-0">
+                        The aesthetic countertop garden for your home.
+                    </p>
+</div>
+<!-- Action Cluster -->
+<div class="flex flex-col gap-md w-full">
+<button class="w-full h-[56px] bg-primary text-on-primary font-label-button text-label-button rounded-full shadow-sm active:scale-95 hover:bg-brand-pressed transition-all duration-200 flex items-center justify-center gap-sm">
+                        Create My Account
+                        <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+<button class="w-full h-[56px] bg-surface-container text-primary font-label-button text-label-button rounded-full active:scale-95 hover:bg-surface-container-high transition-all duration-200">
+                        Sign In
+                    </button>
+</div>
+<!-- Footer Meta -->
+<div class="mt-xl text-center">
+<p class="font-caption text-caption text-on-surface-variant flex items-center justify-center gap-xs">
+<span class="material-symbols-outlined text-[14px]">eco</span>
+                        Sustainable urban living made simple
+                    </p>
+</div>
+</div>
+</div>
+</main>
+<!-- Passive Environmental Interaction Script -->
+<script>
+        // Subtle parallax effect on scroll for the hero image
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const heroImage = document.querySelector('[data-alt]');
+            if (heroImage) {
+                heroImage.style.transform = `translateY(${scrolled * 0.3}px)`;
+            }
+        });
+
+        // Haptic-like interaction feedback for primary buttons
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('mousedown', () => {
+                if (window.navigator.vibrate) {
+                    window.navigator.vibrate(5);
+                }
+            });
+        });
+    </script>
+</body></html>

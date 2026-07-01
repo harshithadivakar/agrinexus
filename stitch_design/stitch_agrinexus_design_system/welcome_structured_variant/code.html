@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Welcome to AgriNexus</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "dark-surface": "#0F1612",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed": "#dce5de",
+                        "on-tertiary-fixed": "#121e17",
+                        "inverse-on-surface": "#eef2ee",
+                        "tertiary": "#49574d",
+                        "on-surface": "#181c1a",
+                        "dark-brand-primary": "#6DDBA0",
+                        "primary-fixed-dim": "#82d8a3",
+                        "on-tertiary-fixed-variant": "#3c4a41",
+                        "on-primary-container": "#aeffca",
+                        "on-secondary-fixed": "#151d19",
+                        "status-waiting": "#C27A20",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "surface-container": "#ecefeb",
+                        "tertiary-fixed": "#d7e6da",
+                        "inverse-primary": "#82d8a3",
+                        "surface-tint": "#066c41",
+                        "on-tertiary-container": "#e2f2e5",
+                        "on-primary-fixed-variant": "#00522f",
+                        "dark-surface-elevated": "#162019",
+                        "tertiary-container": "#616f65",
+                        "surface-container-high": "#e6e9e5",
+                        "on-secondary-fixed-variant": "#404944",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed": "#002110",
+                        "surface-elevated": "#FFFFFF",
+                        "primary-container": "#1f7a4d",
+                        "surface-variant": "#e0e3df",
+                        "text-primary": "#17211B",
+                        "surface-container-highest": "#e0e3df",
+                        "status-attention": "#B5433D",
+                        "primary": "#006038",
+                        "surface-container-lowest": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-secondary-container": "#5e6661",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#181c1a",
+                        "primary-fixed": "#9ef5be",
+                        "outline-variant": "#bec9bf",
+                        "surface-dim": "#d8dbd7",
+                        "on-surface-variant": "#3f4941",
+                        "surface-bright": "#f7faf6",
+                        "surface-container-low": "#f1f4f0",
+                        "on-primary": "#ffffff",
+                        "secondary-container": "#dce5de",
+                        "status-info": "#3867D6",
+                        "inverse-surface": "#2d312f",
+                        "secondary-fixed-dim": "#c0c9c2",
+                        "brand-pressed": "#165E3A",
+                        "secondary": "#58605b",
+                        "border-subtle": "#D8E4DA",
+                        "background": "#f7faf6",
+                        "tertiary-fixed-dim": "#bbcabe",
+                        "surface": "#f7faf6",
+                        "outline": "#6f7a71"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xxl": "32px",
+                        "md": "16px",
+                        "touch-target": "48px",
+                        "sm": "8px",
+                        "lg": "20px",
+                        "baseline": "4px",
+                        "screen-edge": "20px",
+                        "xl": "24px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "section-title": ["Outfit"],
+                        "screen-title": ["Outfit"],
+                        "label-button": ["Inter"],
+                        "caption": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "screen-title-mobile": ["Outfit"],
+                        "body-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "section-title": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "screen-title": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "label-button": ["15px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "caption": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "400"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "screen-title-mobile": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #F7FAF6;
+            color: #181C1A;
+            -webkit-font-smoothing: antialiased;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="font-body-lg text-on-surface">
+<div class="flex flex-col min-h-screen max-w-md mx-auto bg-surface">
+<!-- Top Section: Logo & Product Photo -->
+<section class="flex flex-col pt-xl px-screen-edge gap-xl">
+<!-- Brand Logo -->
+<header class="flex items-center justify-between">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary text-[28px]">potted_plant</span>
+<span class="font-screen-title-mobile text-[24px] font-extrabold tracking-tight text-primary">AgriNexus</span>
+</div>
+<button class="text-on-surface-variant p-2 rounded-full active:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+</header>
+<!-- Product Photo Container -->
+<div class="relative w-full aspect-square bg-surface-container-low rounded-[8px] overflow-hidden shadow-sm">
+<img alt="AgriNexus Kitchen Native Pod System" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQWdNc7gmLVKTtiWxp8JTqtqVoZx8oeokM3suGjRscEE7PEkMX_N37cyPRXcehoK5BRMYeqdqwxMenlc_7RzGUNC3gLGH-37XI9IbGJsfesESar73L8j6FgMT1tf94Dlr0bIMhG4GtKnlI75WfCkjLwLCwKQCwzQy04bADuMJ5j22kuzS25m69PYxhkmOCppy1ZWHS35rULCr5j-rjTtv3mwnIQ0thMPybymo5gNRSjj_awLBtHBDb1gmwqo9X5b3u7wNGnRaPjpdJ"/>
+</div>
+</section>
+<!-- Bottom Section: Info & Actions -->
+<section class="flex-grow flex flex-col px-screen-edge py-xxl gap-xxl">
+<!-- Text Content -->
+<div class="space-y-md">
+<h1 class="font-screen-title-mobile text-screen-title-mobile text-text-primary leading-tight">
+                    Grow fresh herbs at your fingertips.
+                </h1>
+<div class="space-y-sm">
+<h2 class="font-section-title text-section-title text-primary">Kitchen Native™ System</h2>
+<p class="font-body-lg text-on-surface-variant leading-relaxed">
+                        Our intelligent pod system automates light and water, so you can enjoy organic basil, mint, and cilantro year-round with zero effort.
+                    </p>
+</div>
+</div>
+<!-- Action Cluster -->
+<div class="flex flex-col gap-md mt-auto">
+<button class="w-full h-[56px] bg-primary text-on-primary font-label-button text-label-button rounded-full shadow-sm active:scale-[0.98] hover:bg-brand-pressed transition-all flex items-center justify-center gap-sm">
+                    Create My Account
+                    <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+<button class="w-full h-[56px] bg-surface-container text-primary font-label-button text-label-button rounded-full active:scale-[0.98] hover:bg-surface-container-high transition-all">
+                    Sign In
+                </button>
+</div>
+<!-- Footer Meta -->
+<footer class="text-center">
+<p class="font-caption text-caption text-on-surface-variant flex items-center justify-center gap-xs">
+<span class="material-symbols-outlined text-[14px]">eco</span>
+                    Sustainable urban living made simple
+                </p>
+</footer>
+</section>
+</div>
+<script>
+        // Haptic-like interaction feedback
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('mousedown', () => {
+                if (window.navigator.vibrate) {
+                    window.navigator.vibrate(5);
+                }
+            });
+        });
+    </script>
+</body></html>

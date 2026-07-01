@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pods &amp; Refills - HerbHome</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Outfit:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        body {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "status-info": "#3867D6",
+                        "background": "#f7faf6",
+                        "on-tertiary-container": "#e2f2e5",
+                        "border-subtle": "#D8E4DA",
+                        "on-primary": "#ffffff",
+                        "surface": "#f7faf6",
+                        "on-secondary-fixed": "#151d19",
+                        "surface-container-low": "#f1f4f0",
+                        "secondary-fixed": "#dce5de",
+                        "surface-tint": "#066c41",
+                        "surface-bright": "#f7faf6",
+                        "on-primary-container": "#aeffca",
+                        "on-secondary": "#ffffff",
+                        "surface-container": "#ecefeb",
+                        "status-attention": "#B5433D",
+                        "surface-elevated": "#FFFFFF",
+                        "surface-container-highest": "#e0e3df",
+                        "on-error": "#ffffff",
+                        "tertiary-container": "#616f65",
+                        "surface-dim": "#d8dbd7",
+                        "primary-fixed": "#9ef5be",
+                        "on-primary-fixed": "#002110",
+                        "text-primary": "#17211B",
+                        "dark-surface-elevated": "#162019",
+                        "on-secondary-fixed-variant": "#404944",
+                        "on-primary-fixed-variant": "#00522f",
+                        "primary-fixed-dim": "#82d8a3",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed": "#d7e6da",
+                        "secondary-fixed-dim": "#c0c9c2",
+                        "on-background": "#181c1a",
+                        "primary": "#006038",
+                        "secondary": "#58605b",
+                        "outline": "#6f7a71",
+                        "on-surface": "#181c1a",
+                        "inverse-on-surface": "#eef2ee",
+                        "dark-surface": "#0F1612",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-container": "#5e6661",
+                        "error-container": "#ffdad6",
+                        "on-error-container": "#93000a",
+                        "surface-variant": "#e0e3df",
+                        "tertiary-fixed-dim": "#bbcabe",
+                        "status-waiting": "#C27A20",
+                        "dark-brand-primary": "#6DDBA0",
+                        "secondary-container": "#dce5de",
+                        "brand-pressed": "#165E3A",
+                        "inverse-surface": "#2d312f",
+                        "tertiary": "#49574d",
+                        "on-tertiary-fixed": "#121e17",
+                        "outline-variant": "#bec9bf",
+                        "on-tertiary-fixed-variant": "#3c4a41",
+                        "on-surface-variant": "#3f4941",
+                        "error": "#ba1a1a",
+                        "inverse-primary": "#82d8a3",
+                        "primary-container": "#1f7a4d",
+                        "surface-container-high": "#e6e9e5"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "16px",
+                        "baseline": "4px",
+                        "xl": "24px",
+                        "lg": "20px",
+                        "touch-target": "48px",
+                        "screen-edge": "20px",
+                        "xxl": "32px",
+                        "sm": "8px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "screen-title": ["Outfit"],
+                        "body-lg": ["Inter"],
+                        "label-button": ["Inter"],
+                        "caption": ["Inter"],
+                        "section-title": ["Outfit"],
+                        "screen-title-mobile": ["Outfit"],
+                        "body-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "screen-title": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-button": ["15px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "caption": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "400"}],
+                        "section-title": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "screen-title-mobile": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-lg min-h-screen pb-[120px]">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-dark-surface w-full top-0 sticky z-50 flex justify-between items-center px-screen-edge py-sm">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full overflow-hidden border border-border-subtle">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a smiling young urban dweller in a bright, minimalist kitchen setting. Soft morning light filters through large windows, creating a serene and modern atmosphere. The style is clean and high-end, matching the corporate yet friendly brand identity of a tech-native home appliance app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQ4MviGNWN5-8DBlSRAGtMBz5nykHl_kKpemA_PIKKAihPacTRzEO2FXK_CW4DgqlUnSPU_dR5KymLB8lEgh_9gId-uAufBIs6any68i5qdZxy7C4sSvbmrYNSSZlirFVhQG9hjSZBcO7PCLuOctSvXlGwX79UhMZsZw9pESRkUcChjx8xSvYqc6-kZ1CpUnJS2n8N1qRPLLkZqjpoLb37tJcTDBoGK4EEq0eUh8T-XVnmQwH3pXViT4VprkPxCxBe-bKfB-1kdVac"/>
+</div>
+<h1 class="font-screen-title-mobile text-screen-title-mobile text-primary">Pods &amp; Refills</h1>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:opacity-80 transition-opacity duration-200 text-on-surface-variant">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</header>
+<main class="px-screen-edge space-y-xxl mt-md">
+<!-- Hero Section: Recyclable Pod System -->
+<section class="relative overflow-hidden rounded-xl bg-surface-elevated shadow-sm border border-border-subtle">
+<div class="h-64 w-full relative">
+<img class="w-full h-full object-cover" data-alt="Close-up macro photography of a sleek, white biodegradable hydroponic pod being inserted into a modern dark-green garden base. Vibrant green basil sprouts are visible at the top of the pod. The lighting is soft and natural, emphasizing the clean, tactile textures of the recyclable materials in a high-end urban kitchen environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDClbpljnF9dUD4KxIOFHJUv3acCY4VVliaHpGRgKrPuLKM3HrWhz96MyiRQGj457XXoSYM1iFSeEGKoBAWFtcG3CkdmkbnQb1Gn9aLjLHucfaM1ehpoqThS-FUa5cS16r_hermdJEAJ8tFILxNZSimMpqm5mENioyFbpf1ySEaOxJauYK2KXKYYaDpWTTCHlE1bnXR6tzOapPXxi9ha4x3wtQNTVxboj-mGoS00cHEZCMqE5SqnU-F7Fxxq5JDxKO6RxT2r2Q8kNM7"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+<div class="absolute bottom-md left-md right-md">
+<span class="bg-primary/90 text-white px-sm py-1 rounded-full text-caption font-semibold uppercase tracking-wider mb-xs inline-block">Sustainability</span>
+<h2 class="text-white font-section-title text-section-title">Minimal Upkeep. Zero Waste.</h2>
+<p class="text-white/90 text-body-sm">Our recyclable pod system ensures your herbs thrive with scientific precision and a footprint-free finish.</p>
+</div>
+</div>
+</section>
+<!-- Order Pods Section -->
+<section class="space-y-md">
+<div class="flex justify-between items-end">
+<h2 class="font-section-title text-section-title">Order Pods</h2>
+<button class="text-primary font-label-button text-body-sm flex items-center gap-1">
+                    View Catalog <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+<div class="grid grid-cols-2 gap-md">
+<!-- Card 1: Italian Herb Bundle -->
+<div class="bg-surface-elevated p-sm rounded-xl shadow-sm border border-border-subtle group active:scale-95 transition-transform duration-150">
+<div class="aspect-square rounded-lg overflow-hidden mb-sm">
+<img class="w-full h-full object-cover" data-alt="A curated bundle of three hydroponic seed pods featuring Genovese Basil, Oregano, and Rosemary. The pods are neatly arranged on a clean white surface with fresh sprigs of the same herbs scattered artistically around them. The mood is fresh, culinary, and sophisticated, using a soft green and white palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAaiLauWCLicJzIF7DJBwJFq0Q4ci0dhVpnY6KlVa3KMDYOR3AQvEQ4aiToaKwwa-LYVavu97sfUAY3PakOOkQNJ7KEZPdlIFbMatsMo127FL4irwj3EFB3Qk2j-Es-cGuVCPG-rCAvRu0MQM8-B_oY023LZp_zLEPxNfRBaHR-Jke9-XMZsfzz9pjghtQf0XKaeT3a6F3Ycu6uxv-RETPibVwcVros13xc5__huc2KrFnQlfiAn8n5dTiwdBOx7veHl6oCR9-_2I5_"/>
+</div>
+<div class="px-1">
+<div class="flex justify-between items-start">
+<h3 class="font-semibold text-body-sm text-primary leading-tight">Italian Herb Bundle</h3>
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">open_in_new</span>
+</div>
+<p class="text-caption text-on-surface-variant mt-1">3-Pod Kit</p>
+<p class="text-primary font-bold mt-sm">₹899</p>
+</div>
+</div>
+<!-- Card 2: Fresh Mint Seeds -->
+<div class="bg-surface-elevated p-sm rounded-xl shadow-sm border border-border-subtle group active:scale-95 transition-transform duration-150">
+<div class="aspect-square rounded-lg overflow-hidden mb-sm">
+<img class="w-full h-full object-cover" data-alt="A single Agrinexus biodegradable pod containing Peppermint seeds, shown in a clean studio setting. The pod is white with a minimalist green label. Large, vibrant water droplets rest on a fresh mint leaf in the background, creating a feeling of crispness and hydration. Modern, airy, and clinical-clean aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7IwYcjhWiZvWStL5ewpOuIh3yxpeHTvIUSlJP3sS1UuB50Sn0Z9BiPWpdlaTIXfOQxJ1F2ncZNS0rS5Nyl2RyW4AiiLKVn3Kow81fOTBVmyH5fh8JmFocdCiWLup-GOIg4Lunj15luqeCSaktQPpzeAh-GuXv932FJWtYHJk662sFwvGCynfHnVLQPtN4LWLmXJLdkX297uX8MiHxcoKubHcmden8gyvAHzmwFjpFu7wHSUP1CuzdgSi1eSSFVcZL1l0cdPUyZLP2"/>
+</div>
+<div class="px-1">
+<div class="flex justify-between items-start">
+<h3 class="font-semibold text-body-sm text-primary leading-tight">Fresh Mint Seeds</h3>
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">open_in_new</span>
+</div>
+<p class="text-caption text-on-surface-variant mt-1">Individual Pod</p>
+<p class="text-primary font-bold mt-sm">₹349</p>
+</div>
+</div>
+<!-- Card 3: Thai Basil Bundle -->
+<div class="bg-surface-elevated p-sm rounded-xl shadow-sm border border-border-subtle group active:scale-95 transition-transform duration-150">
+<div class="aspect-square rounded-lg overflow-hidden mb-sm">
+<img class="w-full h-full object-cover" data-alt="Three hydroponic pods containing Thai Basil seeds. The green leaves are lush and healthy, showing vibrant purple stems characteristic of the variety. The image is bright and energetic, with a high-key lighting style that emphasizes the vitality of the plants. Clean background for a marketplace look." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLOSOnGNFWaZfE1L86jKMU5-0C1uF_FqDh0I3wNSihIIi0Rk2PfElC097wztIvMal7y_def1ZTQGya44T5HKckufXmUid7IXMCRPhC4qOntEoYRt7SOt4TSm7vcXF_4SUBpmNTNheMf88l5yfr2P9hMFgSOOtWjf_HnpFkqAt2rbrQbkdmxAAk8iTzm-a_3fwufN2pPosfOYo0vVhsc3E3Nto2nSJ6UbGISf7oM-8OtZg8SJymmY4VicHxcqiTnpvhWzNafTmOZn9-"/>
+</div>
+<div class="px-1">
+<div class="flex justify-between items-start">
+<h3 class="font-semibold text-body-sm text-primary leading-tight">Thai Basil Bundle</h3>
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">open_in_new</span>
+</div>
+<p class="text-caption text-on-surface-variant mt-1">3-Pod Kit</p>
+<p class="text-primary font-bold mt-sm">₹949</p>
+</div>
+</div>
+<!-- Card 4: Exotic Chili Pods -->
+<div class="bg-surface-elevated p-sm rounded-xl shadow-sm border border-border-subtle group active:scale-95 transition-transform duration-150">
+<div class="aspect-square rounded-lg overflow-hidden mb-sm">
+<img class="w-full h-full object-cover" data-alt="A high-end macro shot of small red bird's eye chilies growing from a white Agrinexus pod. The red of the chilies pops against the deep green leaves and the soft white background of the smart garden. The lighting is focused and warm, suggesting a premium, tactile home-growing experience." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBHHHdr-l3iMiXFkbSBBF_4yO2V_KIOLi-23bOtkUjHo_4wp08U-BNvJFxub2jsdzc-5z5Wjdg0bEkxWNxFeTirqoT00EH2aQ__XrPSVRojewQrcmAq3ZiTY3McFSLnPPcva5fCEm009ZW3SfisTy_GObGuRmZTLMj7gEbFK7jNsTwwZ0ZUM-YkLHjOetNZUoUfW2sDWvR1FEpfdi2q2ut0bX3IUaVL0X5P88X8_-iS862PgBE_SA2rozdT39K6p8hRdJ32t3jsrHJc"/>
+</div>
+<div class="px-1">
+<div class="flex justify-between items-start">
+<h3 class="font-semibold text-body-sm text-primary leading-tight">Exotic Chili Pods</h3>
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">open_in_new</span>
+</div>
+<p class="text-caption text-on-surface-variant mt-1">Single Pod</p>
+<p class="text-primary font-bold mt-sm">₹399</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Subscription Section -->
+<section class="space-y-md">
+<h2 class="font-section-title text-section-title">Subscription</h2>
+<div class="bg-tertiary-container text-on-tertiary-container p-xl rounded-xl relative overflow-hidden">
+<!-- Subtle background decoration -->
+<div class="absolute -right-8 -top-8 w-32 h-32 bg-primary/10 rounded-full blur-2xl"></div>
+<div class="relative z-10 space-y-md">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">calendar_today</span>
+<span class="font-label-button text-primary">Monthly Fresh Bundle</span>
+</div>
+<p class="text-body-lg text-primary leading-snug">Never run out of flavor. Get 4 fresh pods delivered to your door every 30 days based on your harvest cycle.</p>
+<div class="flex flex-col gap-sm pt-sm">
+<button class="bg-primary text-white py-md px-xl rounded-full font-label-button text-label-button hover:opacity-90 active:scale-95 transition-all w-full">
+                            Subscribe Now - ₹1,200/mo
+                        </button>
+<button class="bg-transparent border border-primary/20 text-primary py-md px-xl rounded-full font-label-button text-label-button hover:bg-primary/5 active:scale-95 transition-all w-full flex items-center justify-center gap-xs">
+                            Explore Refill Plans
+                        </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Info Banner -->
+<div class="bg-surface-container p-md rounded-lg flex items-start gap-md">
+<span class="material-symbols-outlined text-status-info">eco</span>
+<div class="space-y-1">
+<p class="font-semibold text-body-sm text-primary">Recycle for Rewards</p>
+<p class="text-caption text-on-surface-variant">Return 10 used pods to get a free individual pod of your choice. Learn about our circular economy program.</p>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-md pb-md pt-sm bg-surface-elevated dark:bg-dark-surface-elevated shadow-[0_-4px_12px_0_rgba(0,0,0,0.05)] rounded-t-xl z-50">
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-secondary-container px-lg py-xs hover:bg-surface-container dark:hover:bg-surface-container-highest transition-transform duration-150 active:scale-95 cursor-pointer">
+<span class="material-symbols-outlined">home_max</span>
+<span class="font-caption text-caption mt-1">Garden</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container dark:bg-primary dark:text-on-primary rounded-full px-lg py-xs transition-transform duration-150 active:scale-95 cursor-pointer">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">potted_plant</span>
+<span class="font-caption text-caption mt-1">Pods</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-secondary-container px-lg py-xs hover:bg-surface-container dark:hover:bg-surface-container-highest transition-transform duration-150 active:scale-95 cursor-pointer">
+<span class="material-symbols-outlined">menu_book</span>
+<span class="font-caption text-caption mt-1">Learn</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-secondary-container px-lg py-xs hover:bg-surface-container dark:hover:bg-surface-container-highest transition-transform duration-150 active:scale-95 cursor-pointer">
+<span class="material-symbols-outlined">contact_support</span>
+<span class="font-caption text-caption mt-1">Support</span>
+</div>
+</nav>
+<script>
+        // Micro-interactions for pod selection
+        document.querySelectorAll('.active\\:scale-95').forEach(card => {
+            card.addEventListener('click', () => {
+                // Future implementation: Open detail sheet
+                console.log('Navigating to pod detail...');
+            });
+        });
+    </script>
+</body></html>
