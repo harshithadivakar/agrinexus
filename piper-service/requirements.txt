@@ -1,2 +1,2 @@
 flask==3.0.3
-piper-tts==1.42
+piper-tts==1.4.2
