@@ -1,0 +1,2 @@
+flask==3.03
+piper-tts==1.42
