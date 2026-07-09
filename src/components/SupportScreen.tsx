@@ -1,22 +1,44 @@
 import React, { useState } from 'react';
-import { HelpCircle, MessageSquare, Mail, Phone, Terminal, Send, CheckCircle2 } from 'lucide-react';
+import { MessageSquare, Mail, Terminal, Send, CheckCircle2, AlertCircle } from 'lucide-react';
 
-export default function SupportScreen() {
+interface SupportScreenProps {
+  userEmail?: string;
+  userName?: string;
+}
+
+export default function SupportScreen({ userEmail, userName }: SupportScreenProps) {
   const [subject, setSubject] = useState('pairing');
   const [message, setMessage] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [telemetryPulled, setTelemetryPulled] = useState(false);
   const [telemetryLogs, setTelemetryLogs] = useState<string[]>([]);
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message) return;
+    if (!message.trim() || submitting) return;
 
-    setSuccess(true);
-    setTimeout(() => {
-      setSuccess(false);
+    setSubmitting(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/support/ticket', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category: subject, message, userEmail, userName }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Could not send your ticket right now.');
+      }
+      setSuccess(true);
       setMessage('');
-    }, 4000);
+      setTimeout(() => setSuccess(false), 4000);
+    } catch (err: any) {
+      setError(err.message || 'Could not send your ticket right now.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const pullTelemetryLogs = () => {
@@ -90,7 +112,26 @@ export default function SupportScreen() {
             </div>
           )}
 
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-300 text-red-800 rounded-xl text-xs flex items-start gap-2 animate-fade-in">
+              <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+              <span>{error}</span>
+            </div>
+          )}
+
           <form onSubmit={handleSendMessage} className="space-y-4">
+            {(userName || userEmail) && (
+              <div className="flex items-center gap-3 p-3 bg-[#f1f4f0] rounded-xl border border-[#D8E4DA]/50">
+                <div className="w-9 h-9 rounded-full bg-[#ba1a1a]/10 flex items-center justify-center flex-shrink-0">
+                  <span className="material-symbols-outlined text-[#ba1a1a] text-[18px]">person</span>
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-[#181c1a] truncate">{userName || 'Registered user'}</p>
+                  <p className="text-[10px] text-slate-500 truncate">{userEmail || 'No email on file'}</p>
+                </div>
+              </div>
+            )}
+
             <div>
               <label className="block text-[10px] uppercase font-bold text-[#58605b] tracking-wider mb-1 ml-1">Issue Category</label>
               <select
@@ -119,14 +160,14 @@ export default function SupportScreen() {
 
             <button
               type="submit"
-              disabled={!message}
+              disabled={!message.trim() || submitting}
               className={`w-full h-11 rounded-full font-heading font-bold text-xs flex items-center justify-center gap-2 transition-all ${
-                message
+                message.trim() && !submitting
                   ? 'bg-[#ba1a1a] text-white hover:bg-red-800 shadow-md active:scale-95'
                   : 'bg-slate-100 text-slate-400 cursor-not-allowed'
               }`}
             >
-              <Send className="w-3.5 h-3.5" /> Submit Support Ticket
+              <Send className="w-3.5 h-3.5" /> {submitting ? 'Sending...' : 'Submit Support Ticket'}
             </button>
           </form>
         </section>
@@ -134,25 +175,15 @@ export default function SupportScreen() {
         {/* Quick Contacts */}
         <section className="space-y-2">
           <h3 className="font-heading font-bold text-xs text-[#58605b] uppercase tracking-widest ml-1">Emergency Lines</h3>
-          
-          <div className="grid grid-cols-2 gap-3 text-center">
-            <a
-              href="mailto:support@agrinexus.in"
-              className="p-3 bg-white border border-[#D8E4DA]/40 rounded-xl hover:border-slate-400 transition-all flex flex-col items-center justify-center gap-1 group"
-            >
-              <Mail className="w-5 h-5 text-sky-600 group-hover:scale-110 transition-transform" />
-              <span className="text-[10px] font-bold text-[#181c1a]">Email Support</span>
-              <span className="text-[9px] text-[#58605b]">support@agrinexus.in</span>
-            </a>
-            <div
-              onClick={() => alert('Direct Call Center open: 9am - 6pm (IST) on +91-80-45920')}
-              className="p-3 bg-white border border-[#D8E4DA]/40 rounded-xl hover:border-slate-400 transition-all flex flex-col items-center justify-center gap-1 group cursor-pointer"
-            >
-              <Phone className="w-5 h-5 text-emerald-600 group-hover:scale-110 transition-transform" />
-              <span className="text-[10px] font-bold text-[#181c1a]">Direct Hot-line</span>
-              <span className="text-[9px] text-[#58605b]">+91-80-45920</span>
-            </div>
-          </div>
+
+          <a
+            href="mailto:support@agrinexus.in"
+            className="p-3 bg-white border border-[#D8E4DA]/40 rounded-xl hover:border-slate-400 transition-all flex flex-col items-center justify-center gap-1 group text-center"
+          >
+            <Mail className="w-5 h-5 text-sky-600 group-hover:scale-110 transition-transform" />
+            <span className="text-[10px] font-bold text-[#181c1a]">Email Support</span>
+            <span className="text-[9px] text-[#58605b]">support@agrinexus.in</span>
+          </a>
         </section>
       </main>
     </div>

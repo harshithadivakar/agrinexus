@@ -245,7 +245,7 @@ export default function App() {
       case 'learn':
         return <LearnScreen activePlantName={activePlant.name} />;
       case 'support':
-        return <SupportScreen />;
+        return <SupportScreen userEmail={userEmail || undefined} userName={userName} />;
       default:
         return (
           <GardenDashboardScreen

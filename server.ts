@@ -431,6 +431,52 @@ app.post('/api/gemini/diagnose', async (req, res) => {
   }
 });
 
+// --- Support ticket submission, forwarded to Zapier (Webhooks by Zapier -> Email action) ---
+const ZAPIER_SUPPORT_WEBHOOK_URL = process.env.ZAPIER_SUPPORT_WEBHOOK_URL || null;
+
+app.post('/api/support/ticket', async (req, res) => {
+  const { category, message, userEmail, userName } = req.body as {
+    category?: string;
+    message?: string;
+    userEmail?: string;
+    userName?: string;
+  };
+
+  if (!message || typeof message !== 'string' || !message.trim()) {
+    res.status(400).json({ error: 'message is required' });
+    return;
+  }
+
+  if (!ZAPIER_SUPPORT_WEBHOOK_URL) {
+    console.error('ZAPIER_SUPPORT_WEBHOOK_URL is not configured - support ticket was not sent anywhere.');
+    res.status(500).json({ error: 'Support ticketing is not configured yet.' });
+    return;
+  }
+
+  try {
+    const zapierRes = await fetch(ZAPIER_SUPPORT_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        category: category || 'other',
+        message: message.trim(),
+        userEmail: userEmail || 'unknown',
+        userName: userName || 'unknown',
+        submittedAt: new Date().toISOString(),
+      }),
+    });
+
+    if (!zapierRes.ok) {
+      throw new Error(`Zapier webhook responded ${zapierRes.status}`);
+    }
+
+    res.json({ success: true });
+  } catch (error: any) {
+    console.error('Error forwarding support ticket to Zapier:', error);
+    res.status(502).json({ error: 'Could not send your ticket right now. Please try again shortly.' });
+  }
+});
+
 // Start the server
 async function startServer() {
   // Vite middleware setup for Development vs Production
