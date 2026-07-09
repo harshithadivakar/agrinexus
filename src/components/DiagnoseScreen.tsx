@@ -40,6 +40,32 @@ const SAMPLE_PHOTOS = [
   { label: 'Late Blight', src: '/demo/late_blight_tomato.jpg' },
 ];
 
+// A vision model doesn't need multi-megapixel photos, and large uploads are what makes
+// diagnosis feel slow (or time out). Downscale to a max dimension before sending.
+const MAX_DIMENSION = 1024;
+const JPEG_QUALITY = 0.82;
+
+function downscaleImage(dataUrl: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, MAX_DIMENSION / Math.max(img.width, img.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        resolve(dataUrl);
+        return;
+      }
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/jpeg', JPEG_QUALITY));
+    };
+    img.onerror = () => reject(new Error('Could not load image for resizing.'));
+    img.src = dataUrl;
+  });
+}
+
 export default function DiagnoseScreen({ activePlantName = 'Sweet Basil' }: DiagnoseScreenProps) {
   const [preview, setPreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -65,8 +91,9 @@ export default function DiagnoseScreen({ activePlantName = 'Sweet Basil' }: Diag
     setResult(null);
 
     const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = reader.result as string;
+    reader.onload = async () => {
+      const rawDataUrl = reader.result as string;
+      const dataUrl = await downscaleImage(rawDataUrl).catch(() => rawDataUrl);
       setPreview(dataUrl);
       submitForDiagnosis(dataUrl);
     };
@@ -81,8 +108,9 @@ export default function DiagnoseScreen({ activePlantName = 'Sweet Basil' }: Diag
       const res = await fetch(sample.src);
       const blob = await res.blob();
       const reader = new FileReader();
-      reader.onload = () => {
-        const dataUrl = reader.result as string;
+      reader.onload = async () => {
+        const rawDataUrl = reader.result as string;
+        const dataUrl = await downscaleImage(rawDataUrl).catch(() => rawDataUrl);
         setPreview(dataUrl);
         submitForDiagnosis(dataUrl);
       };

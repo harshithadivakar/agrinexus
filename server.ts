@@ -5,7 +5,7 @@ import os from 'os';
 import { spawn, ChildProcessWithoutNullStreams } from 'child_process';
 import dotenv from 'dotenv';
 import { createServer as createViteServer } from 'vite';
-import { GoogleGenAI, Type } from '@google/genai';
+import { GoogleGenAI, Type, ThinkingLevel } from '@google/genai';
 
 // Load environment variables
 dotenv.config();
@@ -308,42 +308,47 @@ app.post('/api/gemini/diagnose', async (req, res) => {
       (plantContext ? `The grower says this is: ${plantContext}. ` : '') +
       'Respond with your best assessment even if uncertain. If the image does not contain a plant, set isPlant to false.';
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.5-flash',
-      contents: [
-        {
-          role: 'user',
-          parts: [
-            { text: prompt },
-            { inlineData: { mimeType, data: base64Data } },
-          ],
-        },
-      ],
-      config: {
-        temperature: 0.4,
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            isPlant: { type: Type.BOOLEAN },
-            status: { type: Type.STRING, enum: ['healthy', 'stressed', 'unhealthy', 'unknown'] },
-            summary: { type: Type.STRING },
-            diseaseSigns: { type: Type.STRING },
-            recommendation: { type: Type.STRING },
-            issues: { type: Type.ARRAY, items: { type: Type.STRING } },
+    const response = await withTimeout(
+      ai.models.generateContent({
+        model: 'gemini-3.5-flash',
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              { text: prompt },
+              { inlineData: { mimeType, data: base64Data } },
+            ],
           },
-          required: ['isPlant', 'status', 'summary', 'diseaseSigns', 'recommendation', 'issues'],
+        ],
+        config: {
+          temperature: 0.4,
+          thinkingConfig: { thinkingLevel: ThinkingLevel.MINIMAL },
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              isPlant: { type: Type.BOOLEAN },
+              status: { type: Type.STRING, enum: ['healthy', 'stressed', 'unhealthy', 'unknown'] },
+              summary: { type: Type.STRING },
+              diseaseSigns: { type: Type.STRING },
+              recommendation: { type: Type.STRING },
+              issues: { type: Type.ARRAY, items: { type: Type.STRING } },
+            },
+            required: ['isPlant', 'status', 'summary', 'diseaseSigns', 'recommendation', 'issues'],
+          },
         },
-      },
-    });
+      }),
+      45000
+    );
 
     const result = JSON.parse(response.text || '{}');
     res.json(result);
   } catch (error: any) {
     console.error('Gemini Diagnose API Error:', error);
-    res.status(500).json({
-      error: error.message || 'An unexpected error occurred while diagnosing the plant photo.',
-    });
+    const message = error.message === 'timeout'
+      ? 'The photo analysis is taking too long. Please try again.'
+      : (error.message || 'An unexpected error occurred while diagnosing the plant photo.');
+    res.status(error.message === 'timeout' ? 504 : 500).json({ error: message });
   }
 });
 
