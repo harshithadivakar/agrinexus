@@ -6,9 +6,21 @@ interface SupportScreenProps {
   userName?: string;
 }
 
+// A starting-point message per category, so the user has something concrete to edit
+// rather than a blank box - swapped in when the category changes, but only if the
+// message still matches the previous category's template (never overwrites something
+// the user actually typed).
+const CATEGORY_TEMPLATES: Record<string, string> = {
+  pairing: "I'm having trouble pairing my AgriNexus device via Bluetooth/QR code. Here's what happened: ",
+  water: "I'm seeing a water level indicator that doesn't look right. Here's what I'm noticing: ",
+  capsules: "I have a question about my seed pods or subscription: ",
+  led: "My grow light isn't behaving as expected (schedule, brightness, etc.). Details: ",
+  other: "Here's my feedback / question: ",
+};
+
 export default function SupportScreen({ userEmail, userName }: SupportScreenProps) {
   const [subject, setSubject] = useState('pairing');
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState(CATEGORY_TEMPLATES.pairing);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +44,7 @@ export default function SupportScreen({ userEmail, userName }: SupportScreenProp
         throw new Error(data.error || 'Could not send your ticket right now.');
       }
       setSuccess(true);
-      setMessage('');
+      setMessage(CATEGORY_TEMPLATES[subject]);
       setTimeout(() => setSuccess(false), 4000);
     } catch (err: any) {
       setError(err.message || 'Could not send your ticket right now.');
@@ -136,7 +148,13 @@ export default function SupportScreen({ userEmail, userName }: SupportScreenProp
               <label className="block text-[10px] uppercase font-bold text-[#58605b] tracking-wider mb-1 ml-1">Issue Category</label>
               <select
                 value={subject}
-                onChange={(e) => setSubject(e.target.value)}
+                onChange={(e) => {
+                  const nextCategory = e.target.value;
+                  // Only swap the template if the user hasn't started customizing it -
+                  // never clobber something they've actually written.
+                  setMessage((prev) => (prev === CATEGORY_TEMPLATES[subject] ? CATEGORY_TEMPLATES[nextCategory] : prev));
+                  setSubject(nextCategory);
+                }}
                 className="w-full h-11 px-3 rounded-xl border border-[#D8E4DA] bg-white text-xs text-[#181c1a] focus:outline-none focus:border-[#ba1a1a]"
               >
                 <option value="pairing">Bluetooth / QR Pairing Fail</option>
