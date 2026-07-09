@@ -5,6 +5,7 @@ export type ActiveScreen =
   | 'plant_choice'
   | 'garden'
   | 'pods'
+  | 'diagnose'
   | 'learn'
   | 'support';
 

@@ -8,6 +8,7 @@ import PairingScreen from './components/PairingScreen';
 import PlantChoiceScreen from './components/PlantChoiceScreen';
 import GardenDashboardScreen from './components/GardenDashboardScreen';
 import PodsScreen from './components/PodsScreen';
+import DiagnoseScreen from './components/DiagnoseScreen';
 import LearnScreen from './components/LearnScreen';
 import SupportScreen from './components/SupportScreen';
 
@@ -232,6 +233,8 @@ export default function App() {
         );
       case 'pods':
         return <PodsScreen />;
+      case 'diagnose':
+        return <DiagnoseScreen activePlantName={activePlant.name} />;
       case 'learn':
         return <LearnScreen activePlantName={activePlant.name} />;
       case 'support':
@@ -252,7 +255,7 @@ export default function App() {
     }
   };
 
-  const showGlobalNav = ['garden', 'pods', 'learn', 'support'].includes(activeScreen);
+  const showGlobalNav = ['garden', 'pods', 'diagnose', 'learn', 'support'].includes(activeScreen);
 
   return (
     <div className="relative min-h-screen bg-[#f7faf6] text-[#181c1a] font-sans antialiased overflow-x-hidden selection:bg-[#9ef5be]">
@@ -364,6 +367,20 @@ export default function App() {
           >
             <span className="material-symbols-outlined text-[22px]">view_module</span>
             <span className="text-[10px] font-heading font-bold mt-0.5">Pods</span>
+          </button>
+
+          {/* Diagnose Tab */}
+          <button
+            onClick={() => setActiveScreen('diagnose')}
+            id="tab-diagnose-btn"
+            className={`flex flex-col items-center justify-center py-2 px-4 rounded-full transition-all duration-300 ${
+              activeScreen === 'diagnose'
+                ? 'bg-[#1f7a4d] text-white shadow-xs'
+                : 'text-[#3f4941] hover:text-[#006038] hover:bg-[#ecefeb]/60'
+            }`}
+          >
+            <span className="material-symbols-outlined text-[22px]">stethoscope</span>
+            <span className="text-[10px] font-heading font-bold mt-0.5">Diagnose</span>
           </button>
 
           {/* Learn Tab */}

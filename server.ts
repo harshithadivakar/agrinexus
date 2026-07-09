@@ -2,7 +2,7 @@ import express from 'express';
 import path from 'path';
 import dotenv from 'dotenv';
 import { createServer as createViteServer } from 'vite';
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI, Type } from '@google/genai';
 
 // Load environment variables
 dotenv.config();
@@ -11,7 +11,8 @@ const PORT = 3000;
 const app = express();
 
 // Middleware
-app.use(express.json());
+// Raised limit to accommodate base64-encoded plant photos from the diagnose endpoint (up to ~8MB files)
+app.use(express.json({ limit: '15mb' }));
 
 // API Key verification helper
 function getApiKey(): string | null {
@@ -69,6 +70,89 @@ app.get('/api/config', (req, res) => {
   });
 });
 
+// --- Plant Voice (talking-plant persona), powered by a local open-source model via Ollama ---
+const OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434';
+const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'llama3.2';
+
+type PlantMood = 'happy' | 'needy' | 'distressed';
+
+const PLANT_VOICE_FALLBACKS: Record<PlantMood, string[]> = {
+  happy: [
+    "Hey! Just soaking up some light today. How are you?",
+    "Feeling good today. Thanks for checking in on me!",
+    "Living my best leafy life right now.",
+    "Growing nicely over here. Proud of me?",
+    "Today's a great day to be a plant.",
+  ],
+  needy: [
+    "Hellooo? Anyone there? I could use a little attention.",
+    "Not gonna lie, I've had better days. Come see me?",
+    "I'm okay, but I've felt cozier. Just saying.",
+    "A little TLC would go a long way right about now.",
+    "Things are a bit off today. Nothing dramatic. Yet.",
+  ],
+  distressed: [
+    "Stop ignoring me. I mean it this time.",
+    "This is officially a cry for help.",
+    "I'm not thriving. I need you, like, now.",
+    "Excuse me?! I've been calling for you all day.",
+    "Okay this is urgent. Come find me.",
+  ],
+};
+
+function pickRandom<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('timeout')), ms);
+    promise.then(
+      (val) => { clearTimeout(timer); resolve(val); },
+      (err) => { clearTimeout(timer); reject(err); }
+    );
+  });
+}
+
+app.post('/api/plant/voice', async (req, res) => {
+  const { plantName, mood } = req.body as { plantName?: string; mood?: PlantMood };
+  const safeMood: PlantMood = mood === 'needy' || mood === 'distressed' ? mood : 'happy';
+  const safePlantName = plantName || 'your plant';
+
+  const moodBrief =
+    safeMood === 'distressed' ? 'you feel neglected and are dramatically calling out for attention'
+    : safeMood === 'needy' ? 'you feel a little neglected and are gently nudging for attention'
+    : 'you feel great and are cheerfully checking in';
+
+  const prompt =
+    `You are a ${safePlantName} plant with a witty, warm personality, speaking directly to your owner in first person. ` +
+    `Right now ${moodBrief}. Write exactly ONE short line (under 15 words), no quotes, no emoji, no stage directions, just what the plant would say out loud.`;
+
+  try {
+    const ollamaCall = fetch(`${OLLAMA_URL}/api/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: OLLAMA_MODEL,
+        prompt,
+        stream: false,
+        options: { temperature: 0.9, num_predict: 40 },
+      }),
+    }).then(async (r) => {
+      if (!r.ok) throw new Error(`Ollama responded ${r.status}`);
+      const data: any = await r.json();
+      const line = (data.response || '').trim().replace(/^"|"$/g, '');
+      if (!line) throw new Error('Empty response from model');
+      return line;
+    });
+
+    const line = await withTimeout(ollamaCall, 4000);
+    res.json({ line, mood: safeMood, source: 'ai' });
+  } catch (err: any) {
+    res.json({ line: pickRandom(PLANT_VOICE_FALLBACKS[safeMood]), mood: safeMood, source: 'canned' });
+  }
+});
+
 // Gemini Chat Endpoint
 app.post('/api/gemini/chat', async (req, res) => {
   try {
@@ -117,6 +201,69 @@ app.post('/api/gemini/chat', async (req, res) => {
     console.error('Gemini API Error:', error);
     res.status(500).json({ 
       error: error.message || 'An unexpected error occurred while communicating with Gemini.' 
+    });
+  }
+});
+
+// Gemini Plant Disease Diagnosis Endpoint
+app.post('/api/gemini/diagnose', async (req, res) => {
+  try {
+    const { imageDataUrl, plantContext } = req.body;
+    if (!imageDataUrl || typeof imageDataUrl !== 'string') {
+      res.status(400).json({ error: 'imageDataUrl is required' });
+      return;
+    }
+
+    const match = imageDataUrl.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
+    if (!match) {
+      res.status(400).json({ error: 'imageDataUrl must be a base64 data URL (e.g. data:image/jpeg;base64,...)' });
+      return;
+    }
+    const [, mimeType, base64Data] = match;
+
+    const ai = getGeminiClient();
+
+    const prompt =
+      'You are a plant-health assistant analyzing a single photo submitted by a home hydroponic grower. ' +
+      'Look closely for signs of disease, pests, nutrient deficiency, or stress on leaves, stems, and roots. ' +
+      (plantContext ? `The grower says this is: ${plantContext}. ` : '') +
+      'Respond with your best assessment even if uncertain. If the image does not contain a plant, set isPlant to false.';
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.5-flash',
+      contents: [
+        {
+          role: 'user',
+          parts: [
+            { text: prompt },
+            { inlineData: { mimeType, data: base64Data } },
+          ],
+        },
+      ],
+      config: {
+        temperature: 0.4,
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            isPlant: { type: Type.BOOLEAN },
+            status: { type: Type.STRING, enum: ['healthy', 'stressed', 'unhealthy', 'unknown'] },
+            summary: { type: Type.STRING },
+            diseaseSigns: { type: Type.STRING },
+            recommendation: { type: Type.STRING },
+            issues: { type: Type.ARRAY, items: { type: Type.STRING } },
+          },
+          required: ['isPlant', 'status', 'summary', 'diseaseSigns', 'recommendation', 'issues'],
+        },
+      },
+    });
+
+    const result = JSON.parse(response.text || '{}');
+    res.json(result);
+  } catch (error: any) {
+    console.error('Gemini Diagnose API Error:', error);
+    res.status(500).json({
+      error: error.message || 'An unexpected error occurred while diagnosing the plant photo.',
     });
   }
 });

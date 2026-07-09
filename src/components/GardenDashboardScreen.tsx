@@ -1,6 +1,71 @@
-import React, { useState } from 'react';
-import { Droplet, Sun, FlaskConical, Calendar, ChevronRight, Sparkles, AlertCircle, X, RotateCcw, Settings, LogOut, Info } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Droplet, Sun, FlaskConical, Calendar, ChevronRight, Sparkles, AlertCircle, X, RotateCcw, Settings, LogOut, Info, Stethoscope, RefreshCw } from 'lucide-react';
 import { Plant, APPROVED_PLANTS, GardenState } from '../types';
+
+type PlantMood = 'happy' | 'needy' | 'distressed';
+
+const LOCAL_VOICE_FALLBACK: Record<PlantMood, string> = {
+  happy: "Feeling good today. Thanks for checking in on me!",
+  needy: "Hellooo? Anyone there? I could use a little attention.",
+  distressed: "Stop ignoring me. I mean it this time.",
+};
+
+function PlantSpeechBubble({ plantName, mood }: { plantName: string; mood: PlantMood }) {
+  const [line, setLine] = useState<string>('');
+  const [loading, setLoading] = useState(true);
+  const requestId = useRef(0);
+
+  const fetchLine = async () => {
+    const thisRequest = ++requestId.current;
+    setLoading(true);
+    try {
+      const res = await fetch('/api/plant/voice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plantName, mood }),
+      });
+      if (!res.ok) throw new Error('bad response');
+      const data = await res.json();
+      if (thisRequest === requestId.current) setLine(data.line || LOCAL_VOICE_FALLBACK[mood]);
+    } catch {
+      if (thisRequest === requestId.current) setLine(LOCAL_VOICE_FALLBACK[mood]);
+    } finally {
+      if (thisRequest === requestId.current) setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLine();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mood, plantName]);
+
+  return (
+    <div className="absolute top-4 left-4 right-16 z-10">
+      <div className="relative bg-white/95 backdrop-blur-sm rounded-2xl rounded-tl-sm px-3.5 py-2.5 shadow-lg border border-white/60 max-w-[85%]">
+        <div className="flex items-start gap-2">
+          <span className="text-base leading-none mt-0.5">🌱</span>
+          {loading ? (
+            <span className="flex items-center gap-1 py-1">
+              <span className="w-1.5 h-1.5 bg-[#006038]/60 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+              <span className="w-1.5 h-1.5 bg-[#006038]/60 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+              <span className="w-1.5 h-1.5 bg-[#006038]/60 rounded-full animate-bounce"></span>
+            </span>
+          ) : (
+            <p className="text-[12px] font-semibold text-[#181c1a] leading-snug">{line}</p>
+          )}
+          <button
+            onClick={fetchLine}
+            disabled={loading}
+            className="ml-auto flex-shrink-0 p-1 -m-1 rounded-full hover:bg-black/5 active:scale-90 transition-transform disabled:opacity-40"
+            title="Hear something else"
+          >
+            <RefreshCw className={`w-3 h-3 text-slate-400 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 interface GardenDashboardScreenProps {
   plant: Plant;
@@ -10,7 +75,7 @@ interface GardenDashboardScreenProps {
   avatarUrl: string;
   onResetSetup: () => void;
   onReplant: () => void;
-  onNavigateToTab: (tab: 'pods' | 'learn' | 'support') => void;
+  onNavigateToTab: (tab: 'pods' | 'diagnose' | 'learn' | 'support') => void;
 }
 
 export default function GardenDashboardScreen({
@@ -33,6 +98,14 @@ export default function GardenDashboardScreen({
   
   // Day Counter offset (Simulated Growing day)
   const [growingDay, setGrowingDay] = useState(12);
+
+  // Derive the plant's "mood" from state, without surfacing raw sensor readouts to the user
+  const plantMood: PlantMood =
+    currentWater === 'critical' || (currentPh !== 'steady' && currentLight === 'off')
+      ? 'distressed'
+      : currentWater === 'low' || currentPh !== 'steady' || currentLight === 'off'
+      ? 'needy'
+      : 'happy';
 
   // Harvest date calculation
   const getEstHarvestDate = () => {
@@ -155,7 +228,9 @@ export default function GardenDashboardScreen({
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent"></div>
             </div>
-            
+
+            <PlantSpeechBubble plantName={plant.name} mood={plantMood} />
+
             <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
               <p className="text-white/80 text-[10px] uppercase font-bold tracking-widest mb-1 font-heading">
                 Current Pod
@@ -263,6 +338,25 @@ export default function GardenDashboardScreen({
               </div>
             </div>
 
+          </div>
+        </section>
+
+        {/* Diagnose Quick Access */}
+        <section className="bg-white rounded-2xl border border-[#D8E4DA]/40 p-4 shadow-xs">
+          <h3 className="font-heading font-bold text-sm text-[#181c1a] mb-3">Plant Health</h3>
+          <div
+            onClick={() => onNavigateToTab('diagnose')}
+            className="flex items-center gap-4 p-3 bg-[#f1f4f0] rounded-xl transition-all hover:bg-[#ecefeb] cursor-pointer group"
+            id="dashboard-diagnose-shortcut"
+          >
+            <div className="w-11 h-11 rounded-lg bg-[#006038]/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+              <Stethoscope className="w-5 h-5 text-[#006038]" />
+            </div>
+            <div className="flex-grow min-w-0">
+              <p className="font-heading font-bold text-xs text-[#181c1a]">Diagnose from a photo</p>
+              <p className="text-[#58605b] text-[10px] truncate">Spot disease, pests, or stress with AI + get next steps.</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-[#58605b] group-hover:translate-x-1 transition-transform" />
           </div>
         </section>
 
