@@ -155,6 +155,15 @@ function presetIndexForCondition(condition: PlantCondition | undefined): number 
   return idx === -1 ? 0 : idx;
 }
 
+// What the person should actually do about each issue - shown in the plant's detail view.
+const ISSUE_ACTION: Record<PlantIssue, string> = {
+  water_critical: 'Add water to the reservoir today - it\'s critically low.',
+  water_low: 'Top up the water reservoir soon.',
+  light_off: 'Move this plant somewhere sunnier, or turn its grow light back on.',
+  ph_high: 'Check the nutrient solution - pH is too alkaline.',
+  ph_low: 'Check the nutrient solution - pH is too acidic.',
+};
+
 const MOOD_RING: Record<PlantMood, string> = {
   happy: 'ring-[#1f7a4d]',
   needy: 'ring-amber-500',
@@ -188,6 +197,7 @@ function PlantOrb({
 
   const preset = STATE_PRESETS[presetIndex];
   const { line, loading, audioLoading, playLine } = usePlantVoice(plant.name, preset.mood, preset.issues);
+  const [showDetail, setShowDetail] = useState(false);
 
   const cyclePreset = () => {
     const nextIndex = (presetIndex + 1) % STATE_PRESETS.length;
@@ -198,9 +208,9 @@ function PlantOrb({
   return (
     <div className="flex flex-col items-center gap-1.5">
       <button
-        onClick={cyclePreset}
+        onClick={() => setShowDetail(true)}
         className={`relative w-14 h-14 rounded-full overflow-hidden ring-[3px] ${MOOD_RING[preset.mood]} shadow-sm active:scale-95 transition-transform`}
-        title={`Tap to change ${plant.name}'s condition (currently: ${preset.label})`}
+        title={`See why ${plant.name} feels this way (currently: ${preset.label})`}
       >
         <img src={plant.imageUrl} alt={plant.name} className="w-full h-full object-cover" />
         <span className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${MOOD_DOT[preset.mood]}`} />
@@ -231,6 +241,73 @@ function PlantOrb({
           )}
         </button>
       </div>
+
+      {showDetail && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-5 animate-fade-in"
+          onClick={() => setShowDetail(false)}
+        >
+          <div
+            className="bg-white rounded-3xl w-full max-w-sm p-5 border border-[#D8E4DA] shadow-xl space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center pb-2 border-b border-[#D8E4DA]/30">
+              <h3 className="font-heading font-bold text-base text-[#181c1a] flex items-center gap-2">
+                <img src={plant.imageUrl} alt={plant.name} className="w-8 h-8 rounded-full object-cover" />
+                {plant.name}
+              </h3>
+              <button onClick={() => setShowDetail(false)} className="p-1 rounded-full hover:bg-slate-100">
+                <X className="w-5 h-5 text-slate-500" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-600">
+              {plant.name}'s current status: <strong className="text-[#181c1a]">{preset.label}</strong>
+            </p>
+
+            <div className="space-y-2">
+              <div className="flex items-center gap-2.5 text-xs p-2.5 bg-[#f1f4f0] rounded-xl">
+                <Droplet className={`w-4 h-4 flex-shrink-0 ${preset.condition.waterLevel !== 'optimal' ? 'text-red-500' : 'text-[#006038]'}`} />
+                <span>
+                  Water: <strong>{preset.condition.waterLevel === 'optimal' ? 'Optimal' : preset.condition.waterLevel === 'low' ? 'Low' : 'Critical'}</strong>
+                </span>
+              </div>
+              <div className="flex items-center gap-2.5 text-xs p-2.5 bg-[#f1f4f0] rounded-xl">
+                <Sun className={`w-4 h-4 flex-shrink-0 ${preset.condition.lightStatus === 'off' ? 'text-slate-400' : 'text-amber-500'}`} />
+                <span>
+                  Light: <strong>{preset.condition.lightStatus === 'off' ? 'Not enough' : 'On schedule'}</strong>
+                </span>
+              </div>
+              <div className="flex items-center gap-2.5 text-xs p-2.5 bg-[#f1f4f0] rounded-xl">
+                <FlaskConical className={`w-4 h-4 flex-shrink-0 ${preset.condition.phStatus !== 'steady' ? 'text-amber-500' : 'text-[#006038]'}`} />
+                <span>
+                  pH: <strong>{preset.condition.phStatus === 'steady' ? 'Balanced' : preset.condition.phStatus === 'high' ? 'Too alkaline' : 'Too acidic'}</strong>
+                </span>
+              </div>
+            </div>
+
+            {preset.issues.length > 0 ? (
+              <div className="space-y-1.5">
+                <p className="text-[10px] uppercase font-bold tracking-wider text-[#58605b]">What {plant.name} needs from you</p>
+                {preset.issues.map((issue) => (
+                  <p key={issue} className="text-xs text-slate-600 flex items-start gap-1.5">
+                    <span className="text-amber-500 mt-0.5">•</span> {ISSUE_ACTION[issue]}
+                  </p>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-[#006038] font-medium">Nothing needed right now - just keep it up!</p>
+            )}
+
+            <button
+              onClick={cyclePreset}
+              className="w-full py-2.5 bg-[#006038] text-white rounded-xl font-heading font-bold text-xs flex items-center justify-center gap-1.5 hover:bg-[#165E3A] active:scale-95 transition-all"
+            >
+              <RefreshCw className="w-3.5 h-3.5" /> Simulate a different condition
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
