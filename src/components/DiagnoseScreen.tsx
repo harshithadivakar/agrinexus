@@ -35,11 +35,17 @@ const STATUS_META: Record<DiagnosisResult['status'], { label: string; color: str
 
 const MAX_FILE_BYTES = 8 * 1024 * 1024;
 
+const SAMPLE_PHOTOS = [
+  { label: 'Early Blight', src: '/demo/early_blight_tomato.jpg' },
+  { label: 'Late Blight', src: '/demo/late_blight_tomato.jpg' },
+];
+
 export default function DiagnoseScreen({ activePlantName = 'Sweet Basil' }: DiagnoseScreenProps) {
   const [preview, setPreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<DiagnosisResult | null>(null);
+  const [isSampleLoading, setIsSampleLoading] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -65,6 +71,27 @@ export default function DiagnoseScreen({ activePlantName = 'Sweet Basil' }: Diag
       submitForDiagnosis(dataUrl);
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleSamplePhoto = async (sample: { label: string; src: string }) => {
+    setIsSampleLoading(sample.label);
+    setError(null);
+    setResult(null);
+    try {
+      const res = await fetch(sample.src);
+      const blob = await res.blob();
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result as string;
+        setPreview(dataUrl);
+        submitForDiagnosis(dataUrl);
+      };
+      reader.readAsDataURL(blob);
+    } catch {
+      setError('Could not load the sample photo. Please try uploading your own.');
+    } finally {
+      setIsSampleLoading(null);
+    }
   };
 
   const submitForDiagnosis = async (imageDataUrl: string) => {
@@ -145,6 +172,33 @@ export default function DiagnoseScreen({ activePlantName = 'Sweet Basil' }: Diag
               className="hidden"
               onChange={(e) => handleFile(e.target.files?.[0])}
             />
+          </div>
+        )}
+
+        {!preview && (
+          <div className="space-y-2">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-[#58605b] px-1">
+              Or try a demo photo
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              {SAMPLE_PHOTOS.map((sample) => (
+                <button
+                  key={sample.label}
+                  onClick={() => handleSamplePhoto(sample)}
+                  disabled={isSampleLoading !== null}
+                  className="relative rounded-xl overflow-hidden border border-[#D8E4DA]/50 aspect-square bg-slate-100 group disabled:opacity-60"
+                >
+                  <img src={sample.src} alt={sample.label} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors flex items-center justify-center">
+                    {isSampleLoading === sample.label ? (
+                      <Loader2 className="w-4 h-4 text-white animate-spin" />
+                    ) : (
+                      <span className="text-white text-xs font-heading font-bold">{sample.label}</span>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
         )}
 

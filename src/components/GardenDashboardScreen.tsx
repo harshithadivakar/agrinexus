@@ -35,8 +35,9 @@ function PlantSpeechBubble({ plantName, mood }: { plantName: string; mood: Plant
       if (!audioRef.current) audioRef.current = new Audio();
       audioRef.current.src = url;
       await audioRef.current.play();
-    } catch {
-      // Voice is a bonus on top of the text bubble; silently skip if it fails
+    } catch (err) {
+      // Voice is a bonus on top of the text bubble; skip playback but keep the reason visible for debugging
+      console.error('Plant voice playback failed:', err);
     } finally {
       setAudioLoading(false);
     }
