@@ -198,6 +198,70 @@ export async function syncGardenState(state: GardenState): Promise<boolean> {
   return true;
 }
 
+export interface PlantCondition {
+  waterLevel: 'optimal' | 'low' | 'critical';
+  lightStatus: 'on_schedule' | 'off';
+  phStatus: 'steady' | 'high' | 'low';
+}
+
+// Fetch every plant's individual water/light/pH condition for the active user,
+// keyed by plant id (e.g. 'sweet_basil') - powers the garden grid's per-plant state.
+export async function fetchAllPlantConditions(): Promise<Record<string, PlantCondition>> {
+  const supabase = await getSupabaseClient();
+  if (!supabase) return {};
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return {};
+
+  const { data, error } = await supabase
+    .from('plant_conditions')
+    .select('plant_id, water_level, light_status, ph_status')
+    .eq('user_id', user.id);
+
+  if (error) {
+    console.error('Error fetching plant conditions from Supabase:', error.message);
+    return {};
+  }
+
+  const byPlantId: Record<string, PlantCondition> = {};
+  for (const row of data || []) {
+    byPlantId[row.plant_id] = {
+      waterLevel: row.water_level,
+      lightStatus: row.light_status,
+      phStatus: row.ph_status,
+    };
+  }
+  return byPlantId;
+}
+
+// Upsert one plant's condition (insert if it doesn't exist yet for this user, else update).
+export async function syncPlantCondition(plantId: string, condition: PlantCondition): Promise<boolean> {
+  const supabase = await getSupabaseClient();
+  if (!supabase) return false;
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return false;
+
+  const { error } = await supabase
+    .from('plant_conditions')
+    .upsert(
+      {
+        user_id: user.id,
+        plant_id: plantId,
+        water_level: condition.waterLevel,
+        light_status: condition.lightStatus,
+        ph_status: condition.phStatus,
+      },
+      { onConflict: 'user_id,plant_id' }
+    );
+
+  if (error) {
+    console.error('Error syncing plant condition to Supabase:', error.message);
+    return false;
+  }
+  return true;
+}
+
 // Fetch public profile from Supabase
 export async function fetchUserProfile(): Promise<{ name: string; email: string } | null> {
   const supabase = await getSupabaseClient();

@@ -78,6 +78,7 @@ const OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434';
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'llama3.2';
 
 type PlantMood = 'happy' | 'needy' | 'distressed';
+type PlantIssue = 'water_low' | 'water_critical' | 'light_off' | 'ph_high' | 'ph_low';
 
 const PLANT_VOICE_FALLBACKS: Record<PlantMood, string[]> = {
   happy: [
@@ -103,6 +104,43 @@ const PLANT_VOICE_FALLBACKS: Record<PlantMood, string[]> = {
   ],
 };
 
+// Fallback lines tied to a *specific* cause, used when we know exactly what's wrong
+// (rather than just a generic mood) - checked in order, first matching issue wins.
+const ISSUE_VOICE_FALLBACKS: Partial<Record<PlantIssue, string[]>> = {
+  water_critical: [
+    "I need water. Like, right now, I'm actually thirsty.",
+    "My roots are begging. Please, some water?",
+    "I'm bone dry over here. Water me?",
+  ],
+  water_low: [
+    "Getting a little thirsty - could use some water soon.",
+    "My water's running low. Top me up?",
+  ],
+  light_off: [
+    "I don't think I'm getting enough sunlight here. Move me somewhere brighter?",
+    "It's kind of dark over here. Can I get a sunnier spot?",
+    "I could really use more light. Different windowsill, maybe?",
+  ],
+  ph_high: [
+    "Something feels a bit off with my water balance today.",
+    "My roots feel a little uneasy - might be worth checking my water.",
+  ],
+  ph_low: [
+    "Something feels a bit off with my water balance today.",
+    "My roots feel a little uneasy - might be worth checking my water.",
+  ],
+};
+
+// What each issue means in plain language, fed to the model so it complains about
+// the *actual* problem instead of a generic mood.
+const ISSUE_PROMPT_HINTS: Record<PlantIssue, string> = {
+  water_critical: "you are very thirsty because your water reservoir is critically low - urgently ask to be watered",
+  water_low: "your water is starting to run low - gently ask for some water soon",
+  light_off: "you aren't getting enough light right now - ask to be moved somewhere sunnier",
+  ph_high: "your water's pH balance feels off (too alkaline) - mention feeling a bit unbalanced or off",
+  ph_low: "your water's pH balance feels off (too acidic) - mention feeling a bit unbalanced or off",
+};
+
 function pickRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
@@ -117,19 +155,33 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   });
 }
 
+const VALID_ISSUES: PlantIssue[] = ['water_critical', 'water_low', 'light_off', 'ph_high', 'ph_low'];
+
 app.post('/api/plant/voice', async (req, res) => {
-  const { plantName, mood } = req.body as { plantName?: string; mood?: PlantMood };
+  const { plantName, mood, issues } = req.body as { plantName?: string; mood?: PlantMood; issues?: string[] };
   const safeMood: PlantMood = mood === 'needy' || mood === 'distressed' ? mood : 'happy';
   const safePlantName = plantName || 'your plant';
+  const safeIssues: PlantIssue[] = Array.isArray(issues) ? issues.filter((i): i is PlantIssue => VALID_ISSUES.includes(i as PlantIssue)) : [];
 
-  const moodBrief =
-    safeMood === 'distressed' ? 'you feel neglected and are dramatically calling out for attention'
+  // Prefer specific, grounded complaints (low water, no light, etc.) over a generic mood -
+  // "I need water" reads as a real plant, "I feel neglected" reads as a canned mood label.
+  const moodBrief = safeIssues.length > 0
+    ? safeIssues.map((i) => ISSUE_PROMPT_HINTS[i]).join('; and ')
+    : safeMood === 'distressed' ? 'you feel neglected and are dramatically calling out for attention'
     : safeMood === 'needy' ? 'you feel a little neglected and are gently nudging for attention'
     : 'you feel great and are cheerfully checking in';
 
   const prompt =
     `You are a ${safePlantName} plant with a witty, warm personality, speaking directly to your owner in first person. ` +
     `Right now ${moodBrief}. Write exactly ONE short line (under 15 words), no quotes, no emoji, no stage directions, just what the plant would say out loud.`;
+
+  const fallbackLine = () => {
+    for (const issue of safeIssues) {
+      const bank = ISSUE_VOICE_FALLBACKS[issue];
+      if (bank) return pickRandom(bank);
+    }
+    return pickRandom(PLANT_VOICE_FALLBACKS[safeMood]);
+  };
 
   try {
     const ollamaCall = fetch(`${OLLAMA_URL}/api/generate`, {
@@ -150,9 +202,9 @@ app.post('/api/plant/voice', async (req, res) => {
     });
 
     const line = await withTimeout(ollamaCall, 4000);
-    res.json({ line, mood: safeMood, source: 'ai' });
+    res.json({ line, mood: safeMood, issues: safeIssues, source: 'ai' });
   } catch (err: any) {
-    res.json({ line: pickRandom(PLANT_VOICE_FALLBACKS[safeMood]), mood: safeMood, source: 'canned' });
+    res.json({ line: fallbackLine(), mood: safeMood, issues: safeIssues, source: 'canned' });
   }
 });
 

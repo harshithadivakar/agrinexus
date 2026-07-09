@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Droplet, Sun, FlaskConical, Calendar, ChevronRight, Sparkles, AlertCircle, X, RotateCcw, Settings, LogOut, Info, Stethoscope, RefreshCw, Volume2, Loader2 } from 'lucide-react';
 import { Plant, APPROVED_PLANTS, GardenState } from '../types';
+import { fetchAllPlantConditions, syncPlantCondition, PlantCondition } from '../supabase';
 
 type PlantMood = 'happy' | 'needy' | 'distressed';
+type PlantIssue = 'water_low' | 'water_critical' | 'light_off' | 'ph_high' | 'ph_low';
 
 const LOCAL_VOICE_FALLBACK: Record<PlantMood, string> = {
   happy: "Feeling good today. Thanks for checking in on me!",
@@ -10,9 +12,10 @@ const LOCAL_VOICE_FALLBACK: Record<PlantMood, string> = {
   distressed: "Stop ignoring me. I mean it this time.",
 };
 
-// Shared talking-plant logic: fetches a personality line for a given plant+mood and
-// can speak it aloud. Used both by the hero card's speech bubble and the garden grid orbs.
-function usePlantVoice(plantName: string, mood: PlantMood) {
+// Shared talking-plant logic: fetches a personality line for a given plant+mood
+// (optionally grounded in specific issues like "water is low") and can speak it
+// aloud. Used both by the hero card's speech bubble and the garden grid orbs.
+function usePlantVoice(plantName: string, mood: PlantMood, issues: PlantIssue[] = []) {
   const [line, setLine] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [audioLoading, setAudioLoading] = useState(false);
@@ -63,7 +66,7 @@ function usePlantVoice(plantName: string, mood: PlantMood) {
       const res = await fetch('/api/plant/voice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plantName, mood }),
+        body: JSON.stringify({ plantName, mood, issues }),
         signal: controller.signal,
       });
       if (!res.ok) throw new Error('bad response');
@@ -81,7 +84,7 @@ function usePlantVoice(plantName: string, mood: PlantMood) {
     fetchLine();
     return () => abortRef.current?.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mood, plantName]);
+  }, [mood, plantName, issues.join(',')]);
 
   return { line, loading, audioLoading, playLine, refetch: fetchLine };
 }
@@ -131,7 +134,27 @@ function PlantSpeechBubble({ plantName, mood }: { plantName: string; mood: Plant
   );
 }
 
-const MOOD_CYCLE: PlantMood[] = ['happy', 'needy', 'distressed'];
+// Four concrete water/light/pH combinations, each grounded in a specific real cause
+// (rather than a generic mood), so the plant complains about the actual problem -
+// "I need water" instead of "I feel neglected".
+const STATE_PRESETS: Array<{ label: string; condition: PlantCondition; mood: PlantMood; issues: PlantIssue[] }> = [
+  { label: 'Healthy', condition: { waterLevel: 'optimal', lightStatus: 'on_schedule', phStatus: 'steady' }, mood: 'happy', issues: [] },
+  { label: 'Thirsty', condition: { waterLevel: 'critical', lightStatus: 'on_schedule', phStatus: 'steady' }, mood: 'needy', issues: ['water_critical'] },
+  { label: 'Needs more light', condition: { waterLevel: 'optimal', lightStatus: 'off', phStatus: 'steady' }, mood: 'needy', issues: ['light_off'] },
+  { label: 'Struggling', condition: { waterLevel: 'critical', lightStatus: 'off', phStatus: 'high' }, mood: 'distressed', issues: ['water_critical', 'light_off', 'ph_high'] },
+];
+
+function presetIndexForCondition(condition: PlantCondition | undefined): number {
+  if (!condition) return 0;
+  const idx = STATE_PRESETS.findIndex(
+    (p) =>
+      p.condition.waterLevel === condition.waterLevel &&
+      p.condition.lightStatus === condition.lightStatus &&
+      p.condition.phStatus === condition.phStatus
+  );
+  return idx === -1 ? 0 : idx;
+}
+
 const MOOD_RING: Record<PlantMood, string> = {
   happy: 'ring-[#1f7a4d]',
   needy: 'ring-amber-500',
@@ -143,27 +166,44 @@ const MOOD_DOT: Record<PlantMood, string> = {
   distressed: 'bg-red-500',
 };
 
-// One circular avatar in the garden grid: its own independently-controllable mood
-// (tap to cycle), its own speech bubble, its own voice - a mini version of the
-// hero card's speech bubble, so different plants can say different things at once.
-function PlantOrb({ plant }: { plant: Plant }) {
-  const [mood, setMood] = useState<PlantMood>('happy');
-  const { line, loading, audioLoading, playLine } = usePlantVoice(plant.name, mood);
+// One circular avatar in the garden grid: its own independently-controllable
+// water/light/pH state (tap to cycle through presets), its own speech bubble
+// grounded in that specific state, and its own voice - so different plants can
+// say different, specific things at once ("I'm thirsty" vs "move me to more light").
+function PlantOrb({
+  plant,
+  initialCondition,
+  onConditionChange,
+}: {
+  plant: Plant;
+  initialCondition?: PlantCondition;
+  onConditionChange: (plantId: string, condition: PlantCondition) => void;
+}) {
+  const [presetIndex, setPresetIndex] = useState(() => presetIndexForCondition(initialCondition));
+  // Adopt the persisted condition once it arrives from Supabase (it loads async, after first render)
+  useEffect(() => {
+    if (initialCondition) setPresetIndex(presetIndexForCondition(initialCondition));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialCondition?.waterLevel, initialCondition?.lightStatus, initialCondition?.phStatus]);
 
-  const cycleMood = () => {
-    const idx = MOOD_CYCLE.indexOf(mood);
-    setMood(MOOD_CYCLE[(idx + 1) % MOOD_CYCLE.length]);
+  const preset = STATE_PRESETS[presetIndex];
+  const { line, loading, audioLoading, playLine } = usePlantVoice(plant.name, preset.mood, preset.issues);
+
+  const cyclePreset = () => {
+    const nextIndex = (presetIndex + 1) % STATE_PRESETS.length;
+    setPresetIndex(nextIndex);
+    onConditionChange(plant.id, STATE_PRESETS[nextIndex].condition);
   };
 
   return (
     <div className="flex flex-col items-center gap-1.5">
       <button
-        onClick={cycleMood}
-        className={`relative w-14 h-14 rounded-full overflow-hidden ring-[3px] ${MOOD_RING[mood]} shadow-sm active:scale-95 transition-transform`}
-        title={`Tap to change ${plant.name}'s mood (currently ${mood})`}
+        onClick={cyclePreset}
+        className={`relative w-14 h-14 rounded-full overflow-hidden ring-[3px] ${MOOD_RING[preset.mood]} shadow-sm active:scale-95 transition-transform`}
+        title={`Tap to change ${plant.name}'s condition (currently: ${preset.label})`}
       >
         <img src={plant.imageUrl} alt={plant.name} className="w-full h-full object-cover" />
-        <span className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${MOOD_DOT[mood]}`} />
+        <span className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${MOOD_DOT[preset.mood]}`} />
       </button>
       <p className="text-[9px] font-heading font-bold text-[#181c1a] text-center leading-tight truncate w-full">
         {plant.name}
@@ -249,6 +289,19 @@ export default function GardenDashboardScreen({
   
   // Day Counter offset (Simulated Growing day)
   const [growingDay, setGrowingDay] = useState(12);
+
+  // Per-plant water/light/pH conditions for the garden grid, persisted to Supabase
+  // (one row per user per plant) so each plant's state survives a reload.
+  const [plantConditions, setPlantConditions] = useState<Record<string, PlantCondition>>({});
+
+  useEffect(() => {
+    fetchAllPlantConditions().then(setPlantConditions);
+  }, []);
+
+  const handlePlantConditionChange = (plantId: string, condition: PlantCondition) => {
+    setPlantConditions((prev) => ({ ...prev, [plantId]: condition }));
+    syncPlantCondition(plantId, condition);
+  };
 
   // Derive the plant's "mood" from state, without surfacing raw sensor readouts to the user
   const plantMood: PlantMood =
@@ -416,7 +469,12 @@ export default function GardenDashboardScreen({
           </div>
           <div className="grid grid-cols-4 gap-2.5">
             {APPROVED_PLANTS.map((p) => (
-              <PlantOrb key={p.id} plant={p} />
+              <PlantOrb
+                key={p.id}
+                plant={p}
+                initialCondition={plantConditions[p.id]}
+                onConditionChange={handlePlantConditionChange}
+              />
             ))}
           </div>
         </section>
