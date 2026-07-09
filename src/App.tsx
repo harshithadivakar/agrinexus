@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Leaf, Info, ShoppingBag, BookOpen, HeartHandshake } from 'lucide-react';
+import { Leaf, Info, ShoppingBag, BookOpen, HeartHandshake, Camera, Stethoscope } from 'lucide-react';
 
 import WelcomeScreen from './components/WelcomeScreen';
 import SetupScreen from './components/SetupScreen';
@@ -372,7 +372,12 @@ export default function App() {
                 : 'text-[#3f4941] hover:text-[#006038] hover:bg-[#ecefeb]/60'
             }`}
           >
-            <span className="material-symbols-outlined text-[22px]">stethoscope</span>
+            <span className="relative inline-flex w-[22px] h-[22px]">
+              <Stethoscope className="w-[22px] h-[22px]" />
+              <span className="absolute -bottom-1 -right-1.5 flex items-center justify-center w-[13px] h-[13px] rounded-full bg-white">
+                <Camera className="w-[9px] h-[9px] text-[#1f7a4d]" strokeWidth={3} />
+              </span>
+            </span>
             <span className="text-[10px] font-heading font-bold mt-0.5">Diagnose</span>
           </button>
 
