@@ -7,13 +7,12 @@ import SetupScreen from './components/SetupScreen';
 import PairingScreen from './components/PairingScreen';
 import PlantChoiceScreen from './components/PlantChoiceScreen';
 import GardenDashboardScreen from './components/GardenDashboardScreen';
-import PodsScreen from './components/PodsScreen';
 import DiagnoseScreen from './components/DiagnoseScreen';
 import LearnScreen from './components/LearnScreen';
 import SupportScreen from './components/SupportScreen';
 
 import { ActiveScreen, GardenState, APPROVED_PLANTS, Plant } from './types';
-import { checkSupabaseConnection, fetchGardenState, syncGardenState, fetchUserProfile, signOutWithSupabase } from './supabase';
+import { checkSupabaseConnection, fetchGardenState, syncGardenState, fetchUserProfile, signOutWithSupabase, getCurrentSupabaseUser } from './supabase';
 
 export default function App() {
   // Session details stored in localStorage for robust testing persistence
@@ -85,6 +84,16 @@ export default function App() {
       try {
         const isConnected = await checkSupabaseConnection();
         if (isConnected) {
+          // Trust a live Supabase session over the cached localStorage email -
+          // if the session has expired or was never real, don't stay "logged in".
+          const currentUser = await getCurrentSupabaseUser();
+          if (!currentUser) {
+            console.log('No active Supabase session found. Logging out.');
+            setUserEmail(null);
+            setActiveScreen('welcome');
+            return;
+          }
+
           console.log('Loading state from Supabase...');
           const cloudState = await fetchGardenState();
           if (cloudState) {
@@ -231,8 +240,6 @@ export default function App() {
             onNavigateToTab={(tab) => setActiveScreen(tab)}
           />
         );
-      case 'pods':
-        return <PodsScreen />;
       case 'diagnose':
         return <DiagnoseScreen activePlantName={activePlant.name} />;
       case 'learn':
@@ -255,7 +262,7 @@ export default function App() {
     }
   };
 
-  const showGlobalNav = ['garden', 'pods', 'diagnose', 'learn', 'support'].includes(activeScreen);
+  const showGlobalNav = ['garden', 'diagnose', 'learn', 'support'].includes(activeScreen);
 
   return (
     <div className="relative min-h-screen bg-[#f7faf6] text-[#181c1a] font-sans antialiased overflow-x-hidden selection:bg-[#9ef5be]">
@@ -353,20 +360,6 @@ export default function App() {
           >
             <span className="material-symbols-outlined text-[22px]">home_max</span>
             <span className="text-[10px] font-heading font-bold mt-0.5">Garden</span>
-          </button>
-
-          {/* Pods Tab */}
-          <button
-            onClick={() => setActiveScreen('pods')}
-            id="tab-pods-btn"
-            className={`flex flex-col items-center justify-center py-2 px-4 rounded-full transition-all duration-300 ${
-              activeScreen === 'pods'
-                ? 'bg-[#1f7a4d] text-white shadow-xs'
-                : 'text-[#3f4941] hover:text-[#006038] hover:bg-[#ecefeb]/60'
-            }`}
-          >
-            <span className="material-symbols-outlined text-[22px]">view_module</span>
-            <span className="text-[10px] font-heading font-bold mt-0.5">Pods</span>
           </button>
 
           {/* Diagnose Tab */}

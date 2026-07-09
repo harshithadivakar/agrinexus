@@ -10,3 +10,8 @@ coverage/
 .agents/
 .mcp.json
 skills-lock.json
+
+# Model weights (see models/README.md for how to fetch them)
+models/piper/*.onnx
+models/piper/*.onnx.json
+voices/

@@ -41,13 +41,21 @@ export default function WelcomeScreen({ onNext }: WelcomeScreenProps) {
       if (isConnected) {
         if (mode === 'signup') {
           setInfoMessage('Creating your Supabase account...');
-          await signUpWithSupabase(email, name, password);
+          const signUpData = await signUpWithSupabase(email, name, password);
+          if (!signUpData.session) {
+            // Email confirmation is required before a session is issued - don't log the user in yet.
+            setInfoMessage('');
+            setError('Account created! Please check your email to confirm your address, then sign in.');
+            setMode('signin');
+            setIsLoading(false);
+            return;
+          }
           setInfoMessage('Account created successfully! Connecting...');
           onNext(email, name || 'User');
         } else {
           setInfoMessage('Signing in via Supabase...');
           const authData = await signInWithSupabase(email, password);
-          const userNameFromMeta = authData.user?.user_metadata?.name || 'User';
+          const userNameFromMeta = authData.user?.user_metadata?.full_name || 'User';
           setInfoMessage('Authenticated successfully! Loading your garden...');
           onNext(email, userNameFromMeta);
         }

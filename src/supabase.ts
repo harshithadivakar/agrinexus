@@ -58,12 +58,20 @@ export async function signUpWithSupabase(email: string, name: string, password: 
     password,
     options: {
       data: {
-        name: name,
+        full_name: name,
       },
     },
   });
 
   if (error) throw error;
+
+  // Supabase does not return an error for an email that is already registered
+  // and confirmed (to avoid leaking which emails exist) - instead it returns a
+  // user with no identities attached. Treat that as "already registered".
+  if (data.user && data.user.identities && data.user.identities.length === 0) {
+    throw new Error('An account with this email already exists. Please sign in instead.');
+  }
+
   return data;
 }
 
@@ -79,6 +87,15 @@ export async function signInWithSupabase(email: string, password: string) {
 
   if (error) throw error;
   return data;
+}
+
+// Get the currently authenticated Supabase user, if any (validates the session is real, not just cached)
+export async function getCurrentSupabaseUser() {
+  const supabase = await getSupabaseClient();
+  if (!supabase) return null;
+
+  const { data: { user } } = await supabase.auth.getUser();
+  return user;
 }
 
 // Log out of Supabase
@@ -191,7 +208,7 @@ export async function fetchUserProfile(): Promise<{ name: string; email: string 
 
   const { data, error } = await supabase
     .from('profiles')
-    .select('name, email')
+    .select('full_name, email')
     .eq('id', user.id)
     .single();
 
@@ -200,5 +217,5 @@ export async function fetchUserProfile(): Promise<{ name: string; email: string 
     return null;
   }
 
-  return data;
+  return { name: data.full_name, email: data.email };
 }

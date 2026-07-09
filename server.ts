@@ -1,5 +1,8 @@
 import express from 'express';
 import path from 'path';
+import fs from 'fs';
+import os from 'os';
+import { spawn, ChildProcessWithoutNullStreams } from 'child_process';
 import dotenv from 'dotenv';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI, Type } from '@google/genai';
@@ -150,6 +153,82 @@ app.post('/api/plant/voice', async (req, res) => {
     res.json({ line, mood: safeMood, source: 'ai' });
   } catch (err: any) {
     res.json({ line: pickRandom(PLANT_VOICE_FALLBACKS[safeMood]), mood: safeMood, source: 'canned' });
+  }
+});
+
+// --- Plant Voice audio (text-to-speech), powered by a local open-source model via Piper ---
+const PIPER_VOICE_PATH = process.env.PIPER_VOICE_PATH || path.join(process.cwd(), 'models', 'piper', 'en_US-amy-medium.onnx');
+const PIPER_PYTHON = process.env.PIPER_PYTHON || 'python';
+const piperOutDir = fs.mkdtempSync(path.join(os.tmpdir(), 'agrinexus-piper-'));
+
+let piperProcess: ChildProcessWithoutNullStreams | null = null;
+let piperQueue: Promise<unknown> = Promise.resolve();
+
+function getPiperProcess(): ChildProcessWithoutNullStreams {
+  if (piperProcess && !piperProcess.killed) return piperProcess;
+  piperProcess = spawn(PIPER_PYTHON, [
+    '-m', 'piper',
+    '-m', PIPER_VOICE_PATH,
+    '-d', piperOutDir,
+    '--output-dir-naming', 'timestamp',
+  ]);
+  piperProcess.on('exit', () => { piperProcess = null; });
+  piperProcess.stderr.on('data', () => {}); // swallow piper's debug/info logs
+  return piperProcess;
+}
+
+// Synthesizes one line of text to a WAV buffer using the persistent Piper process.
+// Requests are serialized through piperQueue since one Piper process handles one line at a time.
+function synthesizeSpeech(text: string): Promise<Buffer> {
+  const run = async () => {
+    const proc = getPiperProcess();
+    const before = new Set(fs.readdirSync(piperOutDir));
+
+    proc.stdin.write(text.replace(/\n/g, ' ').trim() + '\n');
+
+    const deadline = Date.now() + 15000;
+    let newFile: string | null = null;
+    while (Date.now() < deadline) {
+      const after = fs.readdirSync(piperOutDir);
+      newFile = after.find((f) => !before.has(f)) || null;
+      if (newFile) break;
+      await new Promise((r) => setTimeout(r, 150));
+    }
+    if (!newFile) throw new Error('Piper synthesis timed out');
+
+    const fullPath = path.join(piperOutDir, newFile);
+    // Wait for the file to stop growing (Piper still writing it)
+    let lastSize = -1;
+    for (let i = 0; i < 30; i++) {
+      const size = fs.statSync(fullPath).size;
+      if (size === lastSize && size > 0) break;
+      lastSize = size;
+      await new Promise((r) => setTimeout(r, 100));
+    }
+
+    const buffer = fs.readFileSync(fullPath);
+    fs.unlink(fullPath, () => {});
+    return buffer;
+  };
+
+  const result = piperQueue.then(run, run);
+  piperQueue = result.catch(() => {});
+  return result;
+}
+
+app.post('/api/plant/voice/audio', async (req, res) => {
+  const { text } = req.body as { text?: string };
+  if (!text || typeof text !== 'string') {
+    res.status(400).json({ error: 'text is required' });
+    return;
+  }
+  try {
+    const audio = await synthesizeSpeech(text);
+    res.set('Content-Type', 'audio/wav');
+    res.send(audio);
+  } catch (error: any) {
+    console.error('Piper TTS error:', error);
+    res.status(500).json({ error: error.message || 'Speech synthesis failed' });
   }
 });
 

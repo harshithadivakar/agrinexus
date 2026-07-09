@@ -13,29 +13,37 @@ const LOCAL_VOICE_FALLBACK: Record<PlantMood, string> = {
 function PlantSpeechBubble({ plantName, mood }: { plantName: string; mood: PlantMood }) {
   const [line, setLine] = useState<string>('');
   const [loading, setLoading] = useState(true);
-  const requestId = useRef(0);
+  const abortRef = useRef<AbortController | null>(null);
 
   const fetchLine = async () => {
-    const thisRequest = ++requestId.current;
+    // Cancel any in-flight request (guards against React StrictMode's double-invoke in dev,
+    // and against a stale in-flight request racing a fresh manual refresh)
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     setLoading(true);
     try {
       const res = await fetch('/api/plant/voice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ plantName, mood }),
+        signal: controller.signal,
       });
       if (!res.ok) throw new Error('bad response');
       const data = await res.json();
-      if (thisRequest === requestId.current) setLine(data.line || LOCAL_VOICE_FALLBACK[mood]);
-    } catch {
-      if (thisRequest === requestId.current) setLine(LOCAL_VOICE_FALLBACK[mood]);
-    } finally {
-      if (thisRequest === requestId.current) setLoading(false);
+      setLine(data.line || LOCAL_VOICE_FALLBACK[mood]);
+      setLoading(false);
+    } catch (err: any) {
+      if (err?.name === 'AbortError') return; // superseded by a newer request
+      setLine(LOCAL_VOICE_FALLBACK[mood]);
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchLine();
+    return () => abortRef.current?.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mood, plantName]);
 
@@ -75,7 +83,7 @@ interface GardenDashboardScreenProps {
   avatarUrl: string;
   onResetSetup: () => void;
   onReplant: () => void;
-  onNavigateToTab: (tab: 'pods' | 'diagnose' | 'learn' | 'support') => void;
+  onNavigateToTab: (tab: 'diagnose' | 'learn' | 'support') => void;
 }
 
 export default function GardenDashboardScreen({
