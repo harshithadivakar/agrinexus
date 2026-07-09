@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Droplet, Sun, FlaskConical, Calendar, ChevronRight, Sparkles, AlertCircle, X, RotateCcw, Settings, LogOut, Info, Stethoscope, RefreshCw } from 'lucide-react';
+import { Droplet, Sun, FlaskConical, Calendar, ChevronRight, Sparkles, AlertCircle, X, RotateCcw, Settings, LogOut, Info, Stethoscope, RefreshCw, Volume2, Loader2 } from 'lucide-react';
 import { Plant, APPROVED_PLANTS, GardenState } from '../types';
 
 type PlantMood = 'happy' | 'needy' | 'distressed';
@@ -13,7 +13,40 @@ const LOCAL_VOICE_FALLBACK: Record<PlantMood, string> = {
 function PlantSpeechBubble({ plantName, mood }: { plantName: string; mood: PlantMood }) {
   const [line, setLine] = useState<string>('');
   const [loading, setLoading] = useState(true);
+  const [audioLoading, setAudioLoading] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const objectUrlRef = useRef<string | null>(null);
+
+  const playLine = async (text: string) => {
+    if (!text || audioLoading) return;
+    setAudioLoading(true);
+    try {
+      const res = await fetch('/api/plant/voice/audio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      });
+      if (!res.ok) throw new Error('bad response');
+      const blob = await res.blob();
+      if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
+      const url = URL.createObjectURL(blob);
+      objectUrlRef.current = url;
+      if (!audioRef.current) audioRef.current = new Audio();
+      audioRef.current.src = url;
+      await audioRef.current.play();
+    } catch {
+      // Voice is a bonus on top of the text bubble; silently skip if it fails
+    } finally {
+      setAudioLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
+    };
+  }, []);
 
   const fetchLine = async () => {
     // Cancel any in-flight request (guards against React StrictMode's double-invoke in dev,
@@ -61,14 +94,28 @@ function PlantSpeechBubble({ plantName, mood }: { plantName: string; mood: Plant
           ) : (
             <p className="text-[12px] font-semibold text-[#181c1a] leading-snug">{line}</p>
           )}
-          <button
-            onClick={fetchLine}
-            disabled={loading}
-            className="ml-auto flex-shrink-0 p-1 -m-1 rounded-full hover:bg-black/5 active:scale-90 transition-transform disabled:opacity-40"
-            title="Hear something else"
-          >
-            <RefreshCw className={`w-3 h-3 text-slate-400 ${loading ? 'animate-spin' : ''}`} />
-          </button>
+          <div className="ml-auto flex items-center gap-0.5 flex-shrink-0">
+            <button
+              onClick={() => playLine(line)}
+              disabled={loading || audioLoading || !line}
+              className="p-1 -m-1 rounded-full hover:bg-black/5 active:scale-90 transition-transform disabled:opacity-40"
+              title="Hear your plant say this"
+            >
+              {audioLoading ? (
+                <Loader2 className="w-3 h-3 text-[#006038] animate-spin" />
+              ) : (
+                <Volume2 className="w-3 h-3 text-[#006038]" />
+              )}
+            </button>
+            <button
+              onClick={fetchLine}
+              disabled={loading}
+              className="p-1 -m-1 rounded-full hover:bg-black/5 active:scale-90 transition-transform disabled:opacity-40"
+              title="Hear something else"
+            >
+              <RefreshCw className={`w-3 h-3 text-slate-400 ${loading ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
         </div>
       </div>
     </div>
