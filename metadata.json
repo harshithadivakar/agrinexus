@@ -1,0 +1,6 @@
+{
+  "name": "AgriNexus",
+  "description": "Smart countertop garden companion application to pair, configure, and monitor your home crops with a custom Gemini-powered AI Gardening Advisor.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
