@@ -59,13 +59,30 @@ def synthesize():
             return jsonify({"error": "Piper synthesis timed out"}), 500
 
         full_path = Path(OUT_DIR) / new_file
+        # Wait for the file to stop growing. On a cold start (fresh process, model not
+        # yet loaded into memory) this can take several seconds, so use a generous
+        # deadline rather than a fixed iteration count - a premature read here would
+        # otherwise return a 0-byte/truncated "successful" response.
         last_size = -1
-        for _ in range(30):
+        stable_size = 0
+        write_deadline = time.time() + 15
+        while time.time() < write_deadline:
             size = full_path.stat().st_size
             if size == last_size and size > 0:
+                stable_size = size
                 break
             last_size = size
-            tim
+            time.sleep(0.15)
+
+        audio_bytes = full_path.read_bytes()
+        try:
+            os.remove(full_path)
+        except OSError:
+            pass
+
+        if len(audio_bytes) == 0 or len(audio_bytes) != stable_size:
+            return jsonify({"error": "Piper wrote an incomplete audio file"}), 500
+
         return Response(audio_bytes, mimetype="audio/wav")
 
 

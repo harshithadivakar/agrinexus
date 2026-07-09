@@ -159,6 +159,7 @@ app.post('/api/plant/voice', async (req, res) => {
 // --- Plant Voice audio (text-to-speech), powered by a local open-source model via Piper ---
 const PIPER_VOICE_PATH = process.env.PIPER_VOICE_PATH || path.join(process.cwd(), 'models', 'piper', 'en_US-amy-medium.onnx');
 const PIPER_PYTHON = process.env.PIPER_PYTHON || 'python';
+const PIPER_URL = process.env.PIPER_URL || null;
 const piperOutDir = fs.mkdtempSync(path.join(os.tmpdir(), 'agrinexus-piper-'));
 
 let piperProcess: ChildProcessWithoutNullStreams | null = null;
@@ -177,9 +178,24 @@ function getPiperProcess(): ChildProcessWithoutNullStreams {
   return piperProcess;
 }
 
-// Synthesizes one line of text to a WAV buffer using the persistent Piper process.
-// Requests are serialized through piperQueue since one Piper process handles one line at a time.
+// Synthesizes one line of text to a WAV buffer.
+// On Railway (or anywhere PIPER_URL is set), calls the separate Piper service over HTTP
+// instead of spawning a local python process, which only exists on a dev machine.
+// Requests to the local process are serialized through piperQueue since one Piper process
+// handles one line at a time.
 function synthesizeSpeech(text: string): Promise<Buffer> {
+  if (PIPER_URL) {
+    return fetch(`${PIPER_URL}/synthesize`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+    }).then(async (r) => {
+      if (!r.ok) throw new Error(`Piper service responded ${r.status}`);
+      const arrayBuffer = await r.arrayBuffer();
+      return Buffer.from(arrayBuffer);
+    });
+  }
+
   const run = async () => {
     const proc = getPiperProcess();
     const before = new Set(fs.readdirSync(piperOutDir));
@@ -197,17 +213,28 @@ function synthesizeSpeech(text: string): Promise<Buffer> {
     if (!newFile) throw new Error('Piper synthesis timed out');
 
     const fullPath = path.join(piperOutDir, newFile);
-    // Wait for the file to stop growing (Piper still writing it)
+    // Wait for the file to stop growing (Piper still writing it). On a cold start
+    // (fresh process, model not yet loaded into memory) this can take several seconds,
+    // so give it its own generous deadline rather than a fixed iteration count -
+    // a premature read here previously returned a 0-byte/truncated "successful" response.
     let lastSize = -1;
-    for (let i = 0; i < 30; i++) {
+    let stableSize = 0;
+    const writeDeadline = Date.now() + 15000;
+    while (Date.now() < writeDeadline) {
       const size = fs.statSync(fullPath).size;
-      if (size === lastSize && size > 0) break;
+      if (size === lastSize && size > 0) {
+        stableSize = size;
+        break;
+      }
       lastSize = size;
-      await new Promise((r) => setTimeout(r, 100));
+      await new Promise((r) => setTimeout(r, 150));
     }
 
     const buffer = fs.readFileSync(fullPath);
     fs.unlink(fullPath, () => {});
+    if (buffer.length === 0 || buffer.length !== stableSize) {
+      throw new Error('Piper wrote an incomplete audio file');
+    }
     return buffer;
   };
 
