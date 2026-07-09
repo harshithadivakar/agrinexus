@@ -10,7 +10,9 @@ const LOCAL_VOICE_FALLBACK: Record<PlantMood, string> = {
   distressed: "Stop ignoring me. I mean it this time.",
 };
 
-function PlantSpeechBubble({ plantName, mood }: { plantName: string; mood: PlantMood }) {
+// Shared talking-plant logic: fetches a personality line for a given plant+mood and
+// can speak it aloud. Used both by the hero card's speech bubble and the garden grid orbs.
+function usePlantVoice(plantName: string, mood: PlantMood) {
   const [line, setLine] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [audioLoading, setAudioLoading] = useState(false);
@@ -81,6 +83,12 @@ function PlantSpeechBubble({ plantName, mood }: { plantName: string; mood: Plant
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mood, plantName]);
 
+  return { line, loading, audioLoading, playLine, refetch: fetchLine };
+}
+
+function PlantSpeechBubble({ plantName, mood }: { plantName: string; mood: PlantMood }) {
+  const { line, loading, audioLoading, playLine, refetch } = usePlantVoice(plantName, mood);
+
   return (
     <div className="absolute top-4 left-4 right-16 z-10">
       <div className="relative bg-white/95 backdrop-blur-sm rounded-2xl rounded-tl-sm px-3.5 py-2.5 shadow-lg border border-white/60 max-w-[85%]">
@@ -109,7 +117,7 @@ function PlantSpeechBubble({ plantName, mood }: { plantName: string; mood: Plant
               )}
             </button>
             <button
-              onClick={fetchLine}
+              onClick={refetch}
               disabled={loading}
               className="p-1 -m-1 rounded-full hover:bg-black/5 active:scale-90 transition-transform disabled:opacity-40"
               title="Hear something else"
@@ -118,6 +126,93 @@ function PlantSpeechBubble({ plantName, mood }: { plantName: string; mood: Plant
             </button>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+const MOOD_CYCLE: PlantMood[] = ['happy', 'needy', 'distressed'];
+const MOOD_RING: Record<PlantMood, string> = {
+  happy: 'ring-[#1f7a4d]',
+  needy: 'ring-amber-500',
+  distressed: 'ring-red-500',
+};
+const MOOD_DOT: Record<PlantMood, string> = {
+  happy: 'bg-[#1f7a4d]',
+  needy: 'bg-amber-500',
+  distressed: 'bg-red-500',
+};
+
+// One circular avatar in the garden grid: its own independently-controllable mood
+// (tap to cycle), its own speech bubble, its own voice - a mini version of the
+// hero card's speech bubble, so different plants can say different things at once.
+function PlantOrb({ plant }: { plant: Plant }) {
+  const [mood, setMood] = useState<PlantMood>('happy');
+  const { line, loading, audioLoading, playLine } = usePlantVoice(plant.name, mood);
+
+  const cycleMood = () => {
+    const idx = MOOD_CYCLE.indexOf(mood);
+    setMood(MOOD_CYCLE[(idx + 1) % MOOD_CYCLE.length]);
+  };
+
+  return (
+    <div className="flex flex-col items-center gap-1.5">
+      <button
+        onClick={cycleMood}
+        className={`relative w-14 h-14 rounded-full overflow-hidden ring-[3px] ${MOOD_RING[mood]} shadow-sm active:scale-95 transition-transform`}
+        title={`Tap to change ${plant.name}'s mood (currently ${mood})`}
+      >
+        <img src={plant.imageUrl} alt={plant.name} className="w-full h-full object-cover" />
+        <span className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${MOOD_DOT[mood]}`} />
+      </button>
+      <p className="text-[9px] font-heading font-bold text-[#181c1a] text-center leading-tight truncate w-full">
+        {plant.name}
+      </p>
+      <div className="w-full bg-white rounded-xl border border-[#D8E4DA]/50 shadow-xs px-1.5 py-1.5 min-h-[46px] flex items-center gap-1">
+        {loading ? (
+          <span className="flex items-center gap-1 py-1 mx-auto">
+            <span className="w-1 h-1 bg-[#006038]/60 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+            <span className="w-1 h-1 bg-[#006038]/60 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+            <span className="w-1 h-1 bg-[#006038]/60 rounded-full animate-bounce"></span>
+          </span>
+        ) : (
+          <p className="text-[8.5px] font-medium text-[#181c1a] leading-tight flex-grow">{line}</p>
+        )}
+        <button
+          onClick={() => playLine(line)}
+          disabled={loading || audioLoading || !line}
+          className="flex-shrink-0 p-0.5 rounded-full hover:bg-black/5 active:scale-90 transition-transform disabled:opacity-40"
+          title={`Hear ${plant.name}`}
+        >
+          {audioLoading ? (
+            <Loader2 className="w-2.5 h-2.5 text-[#006038] animate-spin" />
+          ) : (
+            <Volume2 className="w-2.5 h-2.5 text-[#006038]" />
+          )}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+const GARDENER_GREETINGS = [
+  "Hey! How's your day been? Your plants have been waiting to catch up with you 🌿",
+  "Welcome back! Take a peek below - your garden's got a few things to tell you.",
+  "Hi there! Before anything else, your plants wanted a quick word with you.",
+  "Good to see you. Scroll down - everyone in the garden's got something to say today.",
+];
+
+// A one-line "remote gardener" greeting that opens the dashboard, before the
+// plants themselves each get a chance to say their own thing below.
+function GardenerGreeting() {
+  const [greeting] = useState(() => GARDENER_GREETINGS[Math.floor(Math.random() * GARDENER_GREETINGS.length)]);
+
+  return (
+    <div className="flex items-start gap-2.5 bg-[#eaf6ee] border border-[#1f7a4d]/20 rounded-2xl px-4 py-3">
+      <span className="text-xl leading-none">🧑‍🌾</span>
+      <div className="min-w-0">
+        <p className="text-[9px] uppercase font-bold tracking-wider text-[#1f7a4d] mb-0.5">Your Gardener</p>
+        <p className="text-[12px] font-semibold text-[#181c1a] leading-snug">{greeting}</p>
       </div>
     </div>
   );
@@ -307,6 +402,22 @@ export default function GardenDashboardScreen({
                 </span>
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* Remote Gardener Greeting */}
+        <GardenerGreeting />
+
+        {/* Garden Grid: each plant has its own independently-controllable mood and voice */}
+        <section>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-heading font-bold text-sm text-[#181c1a]">Your Garden</h3>
+            <span className="text-[9px] text-[#58605b]">Tap a plant to change its mood</span>
+          </div>
+          <div className="grid grid-cols-4 gap-2.5">
+            {APPROVED_PLANTS.map((p) => (
+              <PlantOrb key={p.id} plant={p} />
+            ))}
           </div>
         </section>
 
