@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Droplet, Sun, FlaskConical, Calendar, ChevronRight, Sparkles, AlertCircle, X, RotateCcw, Settings, LogOut, Info, Stethoscope, RefreshCw, Volume2, Loader2 } from 'lucide-react';
+import { Droplet, Sun, FlaskConical, Calendar, ChevronRight, AlertCircle, X, RotateCcw, Settings, LogOut, Info, Stethoscope, RefreshCw, Volume2, Loader2 } from 'lucide-react';
 import { Plant, APPROVED_PLANTS, GardenState } from '../types';
 import { fetchAllPlantConditions, syncPlantCondition, PlantCondition } from '../supabase';
 
@@ -359,13 +359,10 @@ export default function GardenDashboardScreen({
   // Modal states for passive tiles
   const [activeModal, setActiveModal] = useState<'water' | 'light' | 'ph' | 'harvest' | 'profile' | null>(null);
   
-  // Simulated stats state to allow users to interact
-  const [currentWater, setCurrentWater] = useState<'optimal' | 'low' | 'critical'>('optimal');
-  const [currentLight, setCurrentLight] = useState<'on_schedule' | 'off'>('on_schedule');
-  const [currentPh, setCurrentPh] = useState<'steady' | 'high' | 'low'>('steady');
-  
-  // Day Counter offset (Simulated Growing day)
-  const [growingDay, setGrowingDay] = useState(12);
+  // Growing day for the hero card - per-plant water/light/pH states now live in the
+  // garden grid below instead, so the hero's mood is always its healthy default.
+  const growingDay = 12;
+  const plantMood: PlantMood = 'happy';
 
   // Per-plant water/light/pH conditions for the garden grid, persisted to Supabase
   // (one row per user per plant) so each plant's state survives a reload.
@@ -380,26 +377,11 @@ export default function GardenDashboardScreen({
     syncPlantCondition(plantId, condition);
   };
 
-  // Derive the plant's "mood" from state, without surfacing raw sensor readouts to the user
-  const plantMood: PlantMood =
-    currentWater === 'critical' || (currentPh !== 'steady' && currentLight === 'off')
-      ? 'distressed'
-      : currentWater === 'low' || currentPh !== 'steady' || currentLight === 'off'
-      ? 'needy'
-      : 'happy';
-
   // Harvest date calculation
   const getEstHarvestDate = () => {
     const today = new Date();
     today.setDate(today.getDate() + plant.harvestOffsetDays);
     return today.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  };
-
-  const handleResetSim = () => {
-    setCurrentWater('optimal');
-    setCurrentLight('on_schedule');
-    setCurrentPh('steady');
-    setGrowingDay(12);
   };
 
   return (
@@ -428,75 +410,6 @@ export default function GardenDashboardScreen({
 
       {/* Main content area */}
       <main className="max-w-md mx-auto px-5 mt-4 space-y-6">
-        
-        {/* Simulated State Quick Controller (Very valuable for review/testing) */}
-        <section className="bg-white p-3.5 rounded-2xl border border-[#D8E4DA]/50 shadow-xs space-y-2.5">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] uppercase font-bold text-[#58605b] tracking-wider flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-[#006038]" /> Simulation Sandbox Control
-            </span>
-            <button 
-              onClick={handleResetSim}
-              className="text-[10px] text-[#006038] hover:underline font-bold flex items-center gap-1"
-              title="Reset Simulated Readings"
-            >
-              <RotateCcw className="w-3 h-3" /> Reset
-            </button>
-          </div>
-          
-          <div className="grid grid-cols-3 gap-2">
-            <div>
-              <p className="text-[9px] text-[#58605b] mb-1 font-semibold">Water Level</p>
-              <select
-                value={currentWater}
-                onChange={(e) => setCurrentWater(e.target.value as any)}
-                className="w-full text-[10px] p-1.5 rounded-lg border border-[#D8E4DA] bg-white text-slate-800"
-              >
-                <option value="optimal">Optimal (Green)</option>
-                <option value="low">Low (Yellow)</option>
-                <option value="critical">Critical (Red)</option>
-              </select>
-            </div>
-            <div>
-              <p className="text-[9px] text-[#58605b] mb-1 font-semibold">Light Status</p>
-              <select
-                value={currentLight}
-                onChange={(e) => setCurrentLight(e.target.value as any)}
-                className="w-full text-[10px] p-1.5 rounded-lg border border-[#D8E4DA] bg-white text-slate-800"
-              >
-                <option value="on_schedule">On Schedule</option>
-                <option value="off">Turned Off</option>
-              </select>
-            </div>
-            <div>
-              <p className="text-[9px] text-[#58605b] mb-1 font-semibold">pH Stability</p>
-              <select
-                value={currentPh}
-                onChange={(e) => setCurrentPh(e.target.value as any)}
-                className="w-full text-[10px] p-1.5 rounded-lg border border-[#D8E4DA] bg-white text-slate-800"
-              >
-                <option value="steady">Steady (6.2)</option>
-                <option value="high">High (7.8)</option>
-                <option value="low">Low (5.1)</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between pt-1 border-t border-[#D8E4DA]/30">
-            <span className="text-[10px] text-[#58605b] font-medium">Configure growing day:</span>
-            <div className="flex items-center gap-2">
-              <button 
-                onClick={() => setGrowingDay(prev => Math.max(1, prev - 1))}
-                className="w-5 h-5 bg-[#f1f4f0] rounded-md text-xs font-bold flex items-center justify-center border border-[#bec9bf]/40"
-              >-</button>
-              <span className="text-[11px] font-bold text-[#181c1a] w-12 text-center">Day {growingDay}</span>
-              <button 
-                onClick={() => setGrowingDay(prev => prev + 1)}
-                className="w-5 h-5 bg-[#f1f4f0] rounded-md text-xs font-bold flex items-center justify-center border border-[#bec9bf]/40"
-              >+</button>
-            </div>
-          </div>
-        </section>
 
         {/* Hero Section: Active Plant Card */}
         <section>
@@ -542,7 +455,7 @@ export default function GardenDashboardScreen({
         <section>
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-heading font-bold text-sm text-[#181c1a]">Your Garden</h3>
-            <span className="text-[9px] text-[#58605b]">Tap a plant to change its mood</span>
+            <span className="text-[9px] text-[#58605b]">Tap a plant to see how it's doing</span>
           </div>
           <div className="grid grid-cols-4 gap-2.5">
             {APPROVED_PLANTS.map((p) => (
@@ -566,20 +479,12 @@ export default function GardenDashboardScreen({
               className="p-4 bg-white rounded-2xl border border-[#D8E4DA]/40 shadow-xs cursor-pointer hover:border-[#006038]/50 hover:shadow-sm transition-all flex flex-col justify-between h-32 select-none group"
             >
               <div className="flex items-center gap-1.5 text-[#58605b] group-hover:text-[#006038] transition-colors">
-                <Droplet className={`w-5 h-5 ${
-                  currentWater === 'low' ? 'text-amber-500' : currentWater === 'critical' ? 'text-red-500' : 'text-[#006038]'
-                }`} />
+                <Droplet className="w-5 h-5 text-[#006038]" />
                 <span className="font-heading font-bold text-xs uppercase tracking-wider">Water</span>
               </div>
               <div>
-                <p className={`font-heading text-lg font-extrabold ${
-                  currentWater === 'low' ? 'text-amber-600' : currentWater === 'critical' ? 'text-red-600' : 'text-[#006038]'
-                }`}>
-                  {currentWater === 'low' ? 'Low Level' : currentWater === 'critical' ? 'Critical!' : 'Ready'}
-                </p>
-                <p className="text-[#58605b] text-[11px] mt-0.5 leading-tight">
-                  {currentWater === 'low' ? 'Refill required soon' : currentWater === 'critical' ? 'Water reservoir dry' : 'Level is optimal'}
-                </p>
+                <p className="font-heading text-lg font-extrabold text-[#006038]">Ready</p>
+                <p className="text-[#58605b] text-[11px] mt-0.5 leading-tight">Level is optimal</p>
               </div>
             </div>
 
@@ -589,16 +494,12 @@ export default function GardenDashboardScreen({
               className="p-4 bg-white rounded-2xl border border-[#D8E4DA]/40 shadow-xs cursor-pointer hover:border-[#006038]/50 hover:shadow-sm transition-all flex flex-col justify-between h-32 select-none group"
             >
               <div className="flex items-center gap-1.5 text-[#58605b] group-hover:text-[#006038] transition-colors">
-                <Sun className={`w-5 h-5 ${currentLight === 'off' ? 'text-slate-400' : 'text-amber-500 animate-spin-slow'}`} />
+                <Sun className="w-5 h-5 text-amber-500 animate-spin-slow" />
                 <span className="font-heading font-bold text-xs uppercase tracking-wider">Light</span>
               </div>
               <div>
-                <p className={`font-heading text-lg font-extrabold ${currentLight === 'off' ? 'text-slate-600' : 'text-[#006038]'}`}>
-                  {currentLight === 'off' ? 'Offline' : 'On Schedule'}
-                </p>
-                <p className="text-[#58605b] text-[11px] mt-0.5 leading-tight">
-                  {currentLight === 'off' ? 'Power off / manual idle' : '14h / 10h cycle'}
-                </p>
+                <p className="font-heading text-lg font-extrabold text-[#006038]">On Schedule</p>
+                <p className="text-[#58605b] text-[11px] mt-0.5 leading-tight">14h / 10h cycle</p>
               </div>
             </div>
 
@@ -608,16 +509,12 @@ export default function GardenDashboardScreen({
               className="p-4 bg-white rounded-2xl border border-[#D8E4DA]/40 shadow-xs cursor-pointer hover:border-[#006038]/50 hover:shadow-sm transition-all flex flex-col justify-between h-32 select-none group"
             >
               <div className="flex items-center gap-1.5 text-[#58605b] group-hover:text-[#006038] transition-colors">
-                <FlaskConical className={`w-5 h-5 ${currentPh !== 'steady' ? 'text-amber-500' : 'text-[#006038]'}`} />
+                <FlaskConical className="w-5 h-5 text-[#006038]" />
                 <span className="font-heading font-bold text-xs uppercase tracking-wider">pH</span>
               </div>
               <div>
-                <p className={`font-heading text-lg font-extrabold ${currentPh !== 'steady' ? 'text-amber-600' : 'text-[#006038]'}`}>
-                  {currentPh === 'high' ? 'High pH' : currentPh === 'low' ? 'Low pH' : 'Steady'}
-                </p>
-                <p className="text-[#58605b] text-[11px] mt-0.5 leading-tight">
-                  {currentPh === 'high' ? '7.8 pH alkaline scale' : currentPh === 'low' ? '5.1 pH acidic buffer' : '6.2 pH balanced'}
-                </p>
+                <p className="font-heading text-lg font-extrabold text-[#006038]">Steady</p>
+                <p className="text-[#58605b] text-[11px] mt-0.5 leading-tight">6.2 pH balanced</p>
               </div>
             </div>
 
