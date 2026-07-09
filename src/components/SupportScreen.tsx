@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MessageSquare, Mail, Terminal, Send, CheckCircle2, AlertCircle } from 'lucide-react';
 
 interface SupportScreenProps {
@@ -21,11 +21,19 @@ const CATEGORY_TEMPLATES: Record<string, string> = {
 export default function SupportScreen({ userEmail, userName }: SupportScreenProps) {
   const [subject, setSubject] = useState('pairing');
   const [message, setMessage] = useState(CATEGORY_TEMPLATES.pairing);
+  const [contactEmail, setContactEmail] = useState(userEmail || '');
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [telemetryPulled, setTelemetryPulled] = useState(false);
   const [telemetryLogs, setTelemetryLogs] = useState<string[]>([]);
+
+  // userEmail can arrive after the initial render (loaded from Supabase asynchronously) -
+  // adopt it once, but never overwrite an email the user has since typed themselves.
+  useEffect(() => {
+    if (userEmail && !contactEmail) setContactEmail(userEmail);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userEmail]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +45,7 @@ export default function SupportScreen({ userEmail, userName }: SupportScreenProp
       const res = await fetch('/api/support/ticket', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ category: subject, message, userEmail, userName }),
+        body: JSON.stringify({ category: subject, message, userEmail: contactEmail, userName }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -132,17 +140,21 @@ export default function SupportScreen({ userEmail, userName }: SupportScreenProp
           )}
 
           <form onSubmit={handleSendMessage} className="space-y-4">
-            {(userName || userEmail) && (
-              <div className="flex items-center gap-3 p-3 bg-[#f1f4f0] rounded-xl border border-[#D8E4DA]/50">
-                <div className="w-9 h-9 rounded-full bg-[#ba1a1a]/10 flex items-center justify-center flex-shrink-0">
-                  <span className="material-symbols-outlined text-[#ba1a1a] text-[18px]">person</span>
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs font-bold text-[#181c1a] truncate">{userName || 'Registered user'}</p>
-                  <p className="text-[10px] text-slate-500 truncate">{userEmail || 'No email on file'}</p>
-                </div>
+            <div className="flex items-center gap-3 p-3 bg-[#f1f4f0] rounded-xl border border-[#D8E4DA]/50">
+              <div className="w-9 h-9 rounded-full bg-[#ba1a1a]/10 flex items-center justify-center flex-shrink-0">
+                <span className="material-symbols-outlined text-[#ba1a1a] text-[18px]">person</span>
               </div>
-            )}
+              <div className="min-w-0 flex-grow">
+                <p className="text-xs font-bold text-[#181c1a] truncate">{userName || 'Registered user'}</p>
+                <input
+                  type="email"
+                  value={contactEmail}
+                  onChange={(e) => setContactEmail(e.target.value)}
+                  placeholder="Email we should reply to"
+                  className="w-full bg-transparent text-[10px] text-slate-600 focus:outline-none focus:text-[#181c1a] border-b border-transparent focus:border-[#ba1a1a]/40 -mb-px"
+                />
+              </div>
+            </div>
 
             <div>
               <label className="block text-[10px] uppercase font-bold text-[#58605b] tracking-wider mb-1 ml-1">Issue Category</label>
