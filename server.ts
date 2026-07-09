@@ -56,6 +56,39 @@ function getGeminiClient(): GoogleGenAI {
   return aiInstance;
 }
 
+// Gemini occasionally returns a transient 503 UNAVAILABLE when its own servers are
+// overloaded ("This model is currently experiencing high demand") - this is not
+// something our code can prevent, but a single blip should never surface as a hard
+// failure to the user. Retries with exponential backoff before giving up.
+function isRetryableGeminiError(err: any): boolean {
+  const msg = String(err?.message || '');
+  return err?.status === 503 || err?.code === 503 || /"code"\s*:\s*503/.test(msg) || /UNAVAILABLE/i.test(msg) || /overloaded|high demand/i.test(msg);
+}
+
+// A 429 RESOURCE_EXHAUSTED means the API key has hit its quota (e.g. the free tier's
+// 20-requests/day cap) - unlike a 503, retrying does not help against a hard quota
+// ceiling and just wastes more of it, so this is deliberately excluded from retry.
+function isQuotaExceededError(err: any): boolean {
+  const msg = String(err?.message || '');
+  return err?.status === 429 || err?.code === 429 || /"code"\s*:\s*429/.test(msg) || /RESOURCE_EXHAUSTED/i.test(msg) || /quota/i.test(msg);
+}
+
+async function withGeminiRetry<T>(fn: () => Promise<T>, retries = 2, baseDelayMs = 1000): Promise<T> {
+  let lastError: any;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await fn();
+    } catch (err: any) {
+      lastError = err;
+      if (!isRetryableGeminiError(err) || attempt === retries) throw err;
+      const delay = baseDelayMs * Math.pow(2, attempt) + Math.random() * 300;
+      console.warn(`Gemini overloaded (attempt ${attempt + 1}/${retries + 1}), retrying in ${Math.round(delay)}ms...`);
+      await new Promise((r) => setTimeout(r, delay));
+    }
+  }
+  throw lastError;
+}
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({
@@ -344,22 +377,30 @@ app.post('/api/gemini/chat', async (req, res) => {
       });
     }
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.5-flash',
-      contents: contents,
-      config: {
-        systemInstruction,
-        temperature: 0.7,
-      },
-    });
+    const response = await withGeminiRetry(() =>
+      ai.models.generateContent({
+        model: 'gemini-3.5-flash',
+        contents: contents,
+        config: {
+          systemInstruction,
+          temperature: 0.7,
+        },
+      })
+    );
 
     const reply = response.text || "I'm sorry, I couldn't generate a response.";
     res.json({ reply });
   } catch (error: any) {
     console.error('Gemini API Error:', error);
-    res.status(500).json({ 
-      error: error.message || 'An unexpected error occurred while communicating with Gemini.' 
-    });
+    if (isQuotaExceededError(error)) {
+      res.status(429).json({ error: "This app has hit its daily Gemini API quota. Please try again tomorrow, or upgrade the API plan." });
+      return;
+    }
+    if (isRetryableGeminiError(error)) {
+      res.status(503).json({ error: "Gemini's servers are experiencing high demand right now. Please try again in a moment." });
+      return;
+    }
+    res.status(500).json({ error: error.message || 'An unexpected error occurred while communicating with Gemini.' });
   }
 });
 
@@ -388,35 +429,37 @@ app.post('/api/gemini/diagnose', async (req, res) => {
       'Respond with your best assessment even if uncertain. If the image does not contain a plant, set isPlant to false.';
 
     const response = await withTimeout(
-      ai.models.generateContent({
-        model: 'gemini-3.5-flash',
-        contents: [
-          {
-            role: 'user',
-            parts: [
-              { text: prompt },
-              { inlineData: { mimeType, data: base64Data } },
-            ],
-          },
-        ],
-        config: {
-          temperature: 0.4,
-          thinkingConfig: { thinkingLevel: ThinkingLevel.MINIMAL },
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              isPlant: { type: Type.BOOLEAN },
-              status: { type: Type.STRING, enum: ['healthy', 'stressed', 'unhealthy', 'unknown'] },
-              summary: { type: Type.STRING },
-              diseaseSigns: { type: Type.STRING },
-              recommendation: { type: Type.STRING },
-              issues: { type: Type.ARRAY, items: { type: Type.STRING } },
+      withGeminiRetry(() =>
+        ai.models.generateContent({
+          model: 'gemini-3.5-flash',
+          contents: [
+            {
+              role: 'user',
+              parts: [
+                { text: prompt },
+                { inlineData: { mimeType, data: base64Data } },
+              ],
             },
-            required: ['isPlant', 'status', 'summary', 'diseaseSigns', 'recommendation', 'issues'],
+          ],
+          config: {
+            temperature: 0.4,
+            thinkingConfig: { thinkingLevel: ThinkingLevel.MINIMAL },
+            responseMimeType: 'application/json',
+            responseSchema: {
+              type: Type.OBJECT,
+              properties: {
+                isPlant: { type: Type.BOOLEAN },
+                status: { type: Type.STRING, enum: ['healthy', 'stressed', 'unhealthy', 'unknown'] },
+                summary: { type: Type.STRING },
+                diseaseSigns: { type: Type.STRING },
+                recommendation: { type: Type.STRING },
+                issues: { type: Type.ARRAY, items: { type: Type.STRING } },
+              },
+              required: ['isPlant', 'status', 'summary', 'diseaseSigns', 'recommendation', 'issues'],
+            },
           },
-        },
-      }),
+        })
+      ),
       45000
     );
 
@@ -424,10 +467,17 @@ app.post('/api/gemini/diagnose', async (req, res) => {
     res.json(result);
   } catch (error: any) {
     console.error('Gemini Diagnose API Error:', error);
-    const message = error.message === 'timeout'
+    const isTimeout = error.message === 'timeout';
+    const isQuotaExceeded = !isTimeout && isQuotaExceededError(error);
+    const isOverloaded = !isTimeout && !isQuotaExceeded && isRetryableGeminiError(error);
+    const message = isTimeout
       ? 'The photo analysis is taking too long. Please try again.'
+      : isQuotaExceeded
+      ? 'This app has hit its daily Gemini API quota. Please try again tomorrow, or upgrade the API plan.'
+      : isOverloaded
+      ? "Gemini's servers are experiencing high demand right now. Please try again in a moment."
       : (error.message || 'An unexpected error occurred while diagnosing the plant photo.');
-    res.status(error.message === 'timeout' ? 504 : 500).json({ error: message });
+    res.status(isTimeout ? 504 : isQuotaExceeded ? 429 : isOverloaded ? 503 : 500).json({ error: message });
   }
 });
 
